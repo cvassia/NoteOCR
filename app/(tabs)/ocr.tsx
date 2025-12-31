@@ -1,5 +1,5 @@
 import { encode } from "base64-arraybuffer";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import * as Sharing from "expo-sharing";
@@ -12,6 +12,7 @@ import {
     StyleSheet,
     Text
 } from "react-native";
+
 
 
 
@@ -40,17 +41,20 @@ export default function OCRScreen() {
 
     const downloadDocx = async (docUrl: string) => {
         try {
+            // Use cacheDirectory for temporary storage
             const fileUri = FileSystem.cacheDirectory + "ocr-text.docx";
 
-            // Fetch the DOCX file
+            // Fetch DOCX as arrayBuffer
             const response = await fetch(docUrl);
             const arrayBuffer = await response.arrayBuffer();
 
-            // Convert ArrayBuffer → Base64
+            // Convert to Base64
             const base64Data = encode(arrayBuffer);
 
-            // Save to local cache WITHOUT specifying EncodingType
-            await FileSystem.writeAsStringAsync(fileUri, base64Data);
+            // Write Base64 to local file
+            await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+                encoding: FileSystem.EncodingType.Base64,
+            });
 
             // Open share dialog
             await Sharing.shareAsync(fileUri);
