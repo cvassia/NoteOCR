@@ -1,5 +1,7 @@
+import * as FileSystem from "expo-file-system";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
+import * as Sharing from "expo-sharing";
 import React, { useState } from "react";
 import {
     ActivityIndicator,
@@ -10,11 +12,14 @@ import {
     Text
 } from "react-native";
 
+
 const SERVER_URL = "http://192.168.1.3:3000/ocr"; // 🔴 change if needed
 
 export default function OCRScreen() {
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [ocrText, setOcrText] = useState("");
+    const [docxUrl, setDocxUrl] = useState("");
+
     const [loading, setLoading] = useState(false);
 
     // Convert ANY image (HEIC / PNG) → REAL JPEG
@@ -28,6 +33,21 @@ export default function OCRScreen() {
             }
         );
         return result.uri;
+    };
+
+    const downloadDocx = async (docUrl: string) => {
+        try {
+            // Use FileSystem.cacheDirectory for a temporary file
+            const fileUri = FileSystem.cacheDirectory + "ocr-text.docx";
+
+            // Download the file directly to device storage
+            const { uri } = await FileSystem.downloadAsync(docUrl, fileUri);
+
+            // Open share dialog
+            await Sharing.shareAsync(uri);
+        } catch (err) {
+            console.error("Error downloading/sharing DOCX:", err);
+        }
     };
 
     const pickImage = async () => {
@@ -61,9 +81,23 @@ export default function OCRScreen() {
                     "Content-Type": "multipart/form-data",
                 },
             });
+            // const fileUri: string = FileSystem.documentDirectory! + "ocr-text.docx";
+
+            // // const fileUri = FileSystem.documentDirectory + "ocr-text.docx";
+            // const blob = await response.blob();
+            // const buffer = await blob.arrayBuffer();
+            // await FileSystem.writeAsStringAsync(fileUri, Buffer.from(buffer).toString("base64"), { encoding: FileSystem.EncodingType.Base64 });
+            // await Sharing.shareAsync(fileUri);
 
             const data = await response.json();
+
+            // console.log("sdgsdgfsdfg", data)
+
             setOcrText(data.text || "No text detected");
+
+            if (data.docUrl) {
+                setDocxUrl(data.docxUrl);
+            }
         } catch (err) {
             console.error("OCR error:", err);
             setOcrText("OCR failed");
@@ -71,6 +105,8 @@ export default function OCRScreen() {
             setLoading(false);
         }
     };
+
+    console.log("docxUrl", docxUrl)
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -84,6 +120,12 @@ export default function OCRScreen() {
 
             {ocrText !== "" && (
                 <Text style={[styles.text, { fontFamily: "System" }]}>{ocrText}</Text>
+            )}
+            {docxUrl && (
+                <Button
+                    title="Download Word file"
+                    onPress={() => downloadDocx(docxUrl)}
+                />
             )}
             <Button title="Pick Image" onPress={pickImage} />
 

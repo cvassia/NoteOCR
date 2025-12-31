@@ -1,9 +1,12 @@
 import cors from "cors";
+import { Document, Packer, Paragraph, TextRun } from "docx";
 import express from "express";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
 import Tesseract from "tesseract.js";
+
+
 
 const app = express();
 const PORT = 3000;
@@ -39,9 +42,50 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
             "eng+ell"
         );
 
+        // fs.unlinkSync(imagePath);
+
+        const text = data.text || "No text detected";
+
+
+        // ---------- Create Word document ----------
+        const doc = new Document({
+            creator: "NoteOCR",
+            title: "OCR Output",
+            description: "Generated from OCR",
+            sections: [],
+        });
+        const paragraphs = text.split(/\n+/).filter(p => p.trim() !== "");
+
+        paragraphs.forEach(p => {
+            doc.addSection({
+                children: [new Paragraph({ children: [new TextRun(p)] })],
+            });
+        });
+
+
+        const docFileName = `ocr_${Date.now()}.docx`;
+        const docPath = path.join(uploadDir, docFileName);
+        const buffer = await Packer.toBuffer(doc);
+
+        fs.writeFileSync(docPath, buffer);
+
+        // ---------- Send Word file to client ----------
+        // res.download(docPath, "ocr-text.docx", (err) => {
+        //     if (err) console.error(err);
+        //     // Clean up files after sending
+        //     // fs.unlinkSync(docPath);
+        //     fs.unlinkSync(imagePath);
+        // });
+        res.json({
+            text: data.text,
+            docPath,
+            docxUrl: `http://localhost:${PORT}/${docFileName}`,
+        });
+
+
+        // delete image after processing
         fs.unlinkSync(imagePath);
 
-        res.json({ text: data.text });
     } catch (err) {
         console.error("OCR error:", err);
         res.status(500).json({ error: "OCR failed" });
