@@ -33,6 +33,7 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
     console.log("OCR image path:", imagePath);
 
     try {
+
         const { data } = await Tesseract.recognize(
             imagePath,
             "eng+ell"

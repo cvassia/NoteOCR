@@ -83,8 +83,10 @@ export default function OCRScreen() {
             )}
 
             {ocrText !== "" && (
-                <Text style={styles.text}>{ocrText}</Text>
+                <Text style={[styles.text, { fontFamily: "System" }]}>{ocrText}</Text>
             )}
+            <Button title="Pick Image" onPress={pickImage} />
+
         </ScrollView>
     );
 }
