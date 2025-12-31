@@ -1,70 +1,89 @@
+import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
-import React, { JSX, useState } from "react";
+import React, { useState } from "react";
 import {
     ActivityIndicator,
     Button,
     Image,
     ScrollView,
     StyleSheet,
-    Text,
-    View
+    Text
 } from "react-native";
-import TextRecognition from "react-native-text-recognition";
 
-export default function OCRScreen(): JSX.Element {
+const SERVER_URL = "http://192.168.1.3:3000/ocr"; // 🔴 change if needed
+
+export default function OCRScreen() {
     const [imageUri, setImageUri] = useState<string | null>(null);
-    const [ocrText, setOcrText] = useState<string>("");
-    const [loading, setLoading] = useState<boolean>(false);
+    const [ocrText, setOcrText] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    // Pick image from library
-    const pickImage = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        });
-
-        if (!result.canceled && result.assets.length > 0) {
-            const uri = result.assets[0].uri;
-            setImageUri(uri);
-            processImage(uri);
-        }
+    // Convert ANY image (HEIC / PNG) → REAL JPEG
+    const convertToJpeg = async (uri: string): Promise<string> => {
+        const result = await ImageManipulator.manipulateAsync(
+            uri,
+            [],
+            {
+                compress: 1,
+                format: ImageManipulator.SaveFormat.JPEG,
+            }
+        );
+        return result.uri;
     };
 
-    // Process image using text-recognition
-    const processImage = async (uri: string) => {
-        setLoading(true);
-        setOcrText("");
-
+    const pickImage = async () => {
         try {
-            const result: string[] = await TextRecognition.recognize(uri);
-            setOcrText(result.join("\n")); // Combine detected lines
-        } catch (error) {
-            console.error(error);
-            setOcrText("Error recognizing text");
-        }
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ["images"], // ✅ correct enum
+                quality: 1,
+            });
 
-        setLoading(false);
+            if (result.canceled) return;
+
+            setLoading(true);
+            setOcrText("");
+
+            const originalUri = result.assets[0].uri;
+            const jpegUri = await convertToJpeg(originalUri);
+
+            setImageUri(jpegUri);
+
+            const formData = new FormData();
+            formData.append("file", {
+                uri: jpegUri,
+                name: "image.jpg",
+                type: "image/jpeg",
+            } as any);
+
+            const response = await fetch(SERVER_URL, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
+            const data = await response.json();
+            setOcrText(data.text || "No text detected");
+        } catch (err) {
+            console.error("OCR error:", err);
+            setOcrText("OCR failed");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            {!imageUri ? (
-                <Button title="Pick Image" onPress={pickImage} />
-            ) : (
-                <View style={styles.imageContainer}>
-                    <Image source={{ uri: imageUri }} style={styles.image} />
-                    {loading ? (
-                        <ActivityIndicator size="large" color="#0000ff" />
-                    ) : (
-                        <Text style={styles.text}>{ocrText}</Text>
-                    )}
-                    <Button
-                        title="Pick Another Image"
-                        onPress={() => {
-                            setImageUri(null);
-                            setOcrText("");
-                        }}
-                    />
-                </View>
+            <Button title="Pick Image" onPress={pickImage} />
+
+            {loading && <ActivityIndicator size="large" style={{ marginTop: 20 }} />}
+
+            {imageUri && (
+                <Image source={{ uri: imageUri }} style={styles.image} />
+            )}
+
+            {ocrText !== "" && (
+                <Text style={styles.text}>{ocrText}</Text>
             )}
         </ScrollView>
     );
@@ -73,20 +92,17 @@ export default function OCRScreen(): JSX.Element {
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        padding: 10,
+        padding: 20,
         justifyContent: "center",
-    },
-    imageContainer: {
-        alignItems: "center",
     },
     image: {
         width: "100%",
         height: 300,
-        marginBottom: 10,
+        marginVertical: 20,
         resizeMode: "contain",
     },
     text: {
         fontSize: 16,
-        marginVertical: 10,
+        marginTop: 10,
     },
 });
