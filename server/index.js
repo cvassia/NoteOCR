@@ -56,7 +56,7 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
 
         const { data } = await Tesseract.recognize(processedPath, 'ell', {
             tessedit_char_whitelist: "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψω.,-:;!?()\"'/",
-            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK
+            tessedit_pageseg_mode: Tesseract.PSM.AUTO
         });
 
 
