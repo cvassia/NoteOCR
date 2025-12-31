@@ -13,9 +13,14 @@ const PORT = 3000;
 
 app.use(cors());
 
+
+
 /* ---------- upload setup ---------- */
 const uploadDir = path.resolve("uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+// Serve the uploads folder so clients can download DOCX
+app.use(express.static(uploadDir));
 
 const storage = multer.diskStorage({
     destination: uploadDir,
@@ -79,7 +84,7 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
         res.json({
             text: data.text,
             docPath,
-            docxUrl: `http://localhost:${PORT}/${docFileName}`,
+            docxUrl: `http://192.168.1.3:${PORT}/${docFileName}`,
         });
 
 

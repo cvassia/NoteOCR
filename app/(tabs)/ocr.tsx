@@ -1,3 +1,4 @@
+import { encode } from "base64-arraybuffer";
 import * as FileSystem from "expo-file-system";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -13,12 +14,14 @@ import {
 } from "react-native";
 
 
+
+
 const SERVER_URL = "http://192.168.1.3:3000/ocr"; // 🔴 change if needed
 
 export default function OCRScreen() {
     const [imageUri, setImageUri] = useState<string | null>(null);
-    const [ocrText, setOcrText] = useState("");
-    const [docxUrl, setDocxUrl] = useState("");
+    const [ocrText, setOcrText] = useState<string | null>("");
+    const [docxUrl, setDocxUrl] = useState<string | null>("");
 
     const [loading, setLoading] = useState(false);
 
@@ -37,14 +40,20 @@ export default function OCRScreen() {
 
     const downloadDocx = async (docUrl: string) => {
         try {
-            // Use FileSystem.cacheDirectory for a temporary file
             const fileUri = FileSystem.cacheDirectory + "ocr-text.docx";
 
-            // Download the file directly to device storage
-            const { uri } = await FileSystem.downloadAsync(docUrl, fileUri);
+            // Fetch the DOCX file
+            const response = await fetch(docUrl);
+            const arrayBuffer = await response.arrayBuffer();
+
+            // Convert ArrayBuffer → Base64
+            const base64Data = encode(arrayBuffer);
+
+            // Save to local cache WITHOUT specifying EncodingType
+            await FileSystem.writeAsStringAsync(fileUri, base64Data);
 
             // Open share dialog
-            await Sharing.shareAsync(uri);
+            await Sharing.shareAsync(fileUri);
         } catch (err) {
             console.error("Error downloading/sharing DOCX:", err);
         }
@@ -95,9 +104,10 @@ export default function OCRScreen() {
 
             setOcrText(data.text || "No text detected");
 
-            if (data.docUrl) {
+            if (data.docxUrl) {
                 setDocxUrl(data.docxUrl);
             }
+
         } catch (err) {
             console.error("OCR error:", err);
             setOcrText("OCR failed");
