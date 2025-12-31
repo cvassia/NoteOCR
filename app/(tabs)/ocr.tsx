@@ -26,14 +26,14 @@ export default function OCRScreen() {
 
     const [loading, setLoading] = useState(false);
 
-    // Convert ANY image (HEIC / PNG) → REAL JPEG
-    const convertToJpeg = async (uri: string): Promise<string> => {
+    // Convert ANY image (HEIC / PNG) → REAL PNG
+    const convertToPNG = async (uri: string): Promise<string> => {
         const result = await ImageManipulator.manipulateAsync(
             uri,
             [],
             {
                 compress: 1,
-                format: ImageManipulator.SaveFormat.JPEG,
+                format: ImageManipulator.SaveFormat.PNG,
             }
         );
         return result.uri;
@@ -76,15 +76,15 @@ export default function OCRScreen() {
             setOcrText("");
 
             const originalUri = result.assets[0].uri;
-            const jpegUri = await convertToJpeg(originalUri);
+            const jpegUri = await convertToPNG(originalUri);
 
             setImageUri(jpegUri);
 
             const formData = new FormData();
             formData.append("file", {
                 uri: jpegUri,
-                name: "image.jpg",
-                type: "image/jpeg",
+                name: "image.png",
+                type: "image/png",
             } as any);
 
             const response = await fetch(SERVER_URL, {

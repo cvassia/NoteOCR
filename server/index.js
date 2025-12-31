@@ -1,10 +1,12 @@
 import cors from "cors";
-import { Document, Packer, Paragraph, TextRun } from "docx";
+import { AlignmentType, Document, Packer, Paragraph, TextRun } from "docx";
 import express from "express";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
+import sharp from "sharp";
 import Tesseract from "tesseract.js";
+
 
 
 
@@ -25,11 +27,13 @@ app.use(express.static(uploadDir));
 const storage = multer.diskStorage({
     destination: uploadDir,
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}.jpg`); // FORCE jpg
+        cb(null, `${Date.now()}.png`); // FORCE jpg
     },
 });
 
 const upload = multer({ storage });
+
+
 
 /* ---------- OCR ---------- */
 app.post("/ocr", upload.single("file"), async (req, res) => {
@@ -37,34 +41,44 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
         return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const imagePath = req.file.path;
-    console.log("OCR image path:", imagePath);
+    const uploadedPath = req.file.path;
+    const pathParsed = path.parse(uploadedPath);
+    const processedPath = path.join(pathParsed.dir, `${pathParsed.name}_processed.png`);
+
+    await sharp(uploadedPath)
+        .png()
+        .grayscale()
+        .resize({ width: 2000 })
+        .normalize()
+        .toFile(processedPath);
 
     try {
 
-        const { data } = await Tesseract.recognize(
-            imagePath,
-            "eng+ell"
-        );
+        const { data } = await Tesseract.recognize(processedPath, 'ell', {
+            tessedit_char_whitelist: "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψω.,-:;!?()\"'/",
+            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK
+        });
 
-        // fs.unlinkSync(imagePath);
 
         const text = data.text || "No text detected";
 
 
+
         // ---------- Create Word document ----------
-        const doc = new Document({
-            creator: "NoteOCR",
-            title: "OCR Output",
-            description: "Generated from OCR",
-            sections: [],
-        });
         const paragraphs = text.split(/\n+/).filter(p => p.trim() !== "");
 
-        paragraphs.forEach(p => {
-            doc.addSection({
-                children: [new Paragraph({ children: [new TextRun(p)] })],
-            });
+        const doc = new Document({
+            sections: [{
+                children: paragraphs.map(p => new Paragraph({
+                    children: [new TextRun({
+                        text: p,
+                        bold: /^[A-Z\s]+$/.test(p), // auto-bold if all caps
+                        font: "Times New Roman",
+                    })],
+                    spacing: { after: 200 }, // space after paragraph
+                    alignment: AlignmentType.CENTER,
+                }))
+            }]
         });
 
 
@@ -74,13 +88,7 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
 
         fs.writeFileSync(docPath, buffer);
 
-        // ---------- Send Word file to client ----------
-        // res.download(docPath, "ocr-text.docx", (err) => {
-        //     if (err) console.error(err);
-        //     // Clean up files after sending
-        //     // fs.unlinkSync(docPath);
-        //     fs.unlinkSync(imagePath);
-        // });
+
         res.json({
             text: data.text,
             docPath,
@@ -89,7 +97,7 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
 
 
         // delete image after processing
-        fs.unlinkSync(imagePath);
+        fs.unlinkSync(processedPath);
 
     } catch (err) {
         console.error("OCR error:", err);
