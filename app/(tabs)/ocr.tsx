@@ -92,6 +92,8 @@ export default function OCRScreen() {
         }
     };
 
+    console.log("first", docxUrl)
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
 
