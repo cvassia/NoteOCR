@@ -1,50 +1,196 @@
-# Welcome to your Expo app 👋
+# NoteOCR 📄📱  
+Offline-Capable OCR Mobile App with Greek & English Support and Word Export
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+---
 
-## Get started
+## 📌 Overview
 
-1. Install dependencies
+**NoteOCR** is a mobile application built with **Expo (React Native)** and a **Node.js OCR server** that allows users to:
 
-   ```bash
-   npm install
-   ```
+- Pick an image from their device
+- Perform OCR (Optical Character Recognition)
+- Recognize **Greek (Ελληνικά)** and **English** text
+- Preserve paragraph structure as much as possible
+- Export the recognized text into a **Microsoft Word (.docx)** file
+- Download or share the Word document from the mobile device
 
-2. Start the app
+This app is designed primarily for **documents**, such as:
+- Legal documents
+- Government forms
+- Printed pages
+- Typed Greek/English text
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## 🧠 Architecture
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+The app consists of **two parts**:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 1️⃣ Mobile Client (Expo / React Native)
+- Image selection
+- Image preprocessing
+- OCR request handling
+- Display OCR results
+- Download & share Word documents
 
-## Get a fresh project
+### 2️⃣ OCR Server (Node.js / Express)
+- Receives images
+- Runs OCR using **Tesseract.js**
+- Supports **Greek (ell)** and **English (eng)**
+- Generates `.docx` files
+- Serves generated Word files to the client
 
-When you're ready, run:
+---
 
-```bash
-npm run reset-project
-```
+## 🛠 Tech Stack
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Frontend
+- Expo (React Native)
+- TypeScript
+- expo-image-picker
+- expo-image-manipulator
+- expo-sharing
 
-## Learn more
+### Backend
+- Node.js
+- Express
+- Multer (file uploads)
+- Tesseract.js v7
+- docx (Word document generation)
+- cors
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 📂 Project Structure
 
-## Join the community
+NoteOCR/
+├── app/
+│ └── (tabs)/
+│ └── ocr.tsx # OCR screen
+├── server/
+│ ├── index.js # OCR server
+│ ├── uploads/ # Uploaded images + generated DOCX
+│ └── package.json
+├── README.md
+---
 
-Join our community of developers creating universal apps.
+## 📱 Mobile App Flow
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. User taps **Pick Image**
+2. Image is selected from gallery
+3. Image is converted to **real JPEG**
+4. Image is uploaded to the OCR server
+5. OCR is performed
+6. Recognized text is:
+   - Displayed on screen
+   - Exported to a Word document
+7. User can **download or share** the `.docx` file
+
+---
+
+## 🖼 Image Preprocessing (Client Side)
+
+Before uploading, the image is:
+
+- Converted to **JPEG**
+- Preserved at full quality
+- Normalized to avoid HEIC / PNG issues
+
+This ensures compatibility with Tesseract.
+
+---
+
+## 🔎 OCR Details
+
+- OCR Engine: **Tesseract.js**
+- Languages:
+  - English: `eng`
+  - Greek: `ell`
+- Combined mode:   `eng + ell`
+
+
+
+### ⚠️ OCR Limitations (Important)
+
+Due to OCR engine limitations:
+
+- ❌ **Exact text alignment (center/right) is NOT preserved**
+- ⚠️ Some characters may be misrecognized (common with Greek accents)
+
+
+---
+
+## 📄 Word (.docx) Export
+
+After OCR, the server:
+
+- Splits text into paragraphs
+- Creates a **single Word document**
+- Keeps paragraphs on the **same page**
+- Avoids page breaks per line
+
+The document is generated using the **docx** library and saved on the server.
+
+---
+
+## 📥 Downloading the Word File (Mobile)
+
+- The server exposes the generated `.docx` via HTTP
+- The mobile app fetches the file
+- The user can:
+- Save it
+- Share it via email / cloud / messaging apps
+
+---
+
+## 🌐 Server API
+
+### POST `/ocr`
+
+Uploads an image and returns OCR results.
+
+### Running the Project
+
+1️⃣ Start the Server
+
+cd server
+npm install
+node index.js
+
+
+
+2️⃣ Start the Mobile App
+
+npm install
+npx expo start
+
+Run on:
+
+iOS Simulator
+Android Emulator
+Physical device 
+
+
+
+### ⚖️ Disclaimer
+
+This app is intended for assistance only.
+OCR results must be manually reviewed, especially for:
+
+Legal documents
+
+Government forms
+
+Court submissions
+
+The developers are not responsible for OCR inaccuracies.
+
+
+### 👨‍💻 Author
+
+Built with persistence, debugging, and patience 💪
+For educational and productivity use.
+
+### 📜 License
+
+MIT License
