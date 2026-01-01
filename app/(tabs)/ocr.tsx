@@ -37,7 +37,7 @@ export default function OCRScreen() {
         if (!docUrl) return;
         try {
             const fileUri = FileSystem.cacheDirectory + "ocr-text.docx";
-            await FileSystem.downloadAsync(docUrl, fileUri); // raw bytes
+            await FileSystem.downloadAsync(docUrl, fileUri); // save raw bytes
             await Sharing.shareAsync(fileUri);
         } catch (err) {
             console.error("Error downloading/sharing DOCX:", err);
