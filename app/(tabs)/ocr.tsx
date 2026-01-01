@@ -1,3 +1,4 @@
+import { REACT_NATIVE_SERVER_URL } from "@env";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -12,7 +13,15 @@ import {
     Text
 } from "react-native";
 
-const SERVER_URL = "http://192.168.1.3:3000/ocr";
+
+
+const SERVER_URL = `${REACT_NATIVE_SERVER_URL}/ocr`; // <-- include /ocr
+
+console.log("Server URL:", SERVER_URL);// const SERVER_URL = Platform.select({
+//     ios: ENV_SERVER_URL,
+//     android: ENV_SERVER_URL.includes("localhost") ? "http://10.0.2.2:3000" : ENV_SERVER_URL,
+//     default: ENV_SERVER_URL,
+// });
 
 export default function OCRScreen() {
     const [imageUri, setImageUri] = useState<string | null>(null);
@@ -36,13 +45,36 @@ export default function OCRScreen() {
     const downloadDocx = async (docUrl: string) => {
         if (!docUrl) return;
         try {
+            // Fetch the DOCX from your server
+            const response = await fetch(docUrl);
+            if (!response.ok) throw new Error("Failed to fetch DOCX from server");
+
+            // Convert response to array buffer
+            const arrayBuffer = await response.arrayBuffer();
+
+            // Convert to base64 string
+            const base64String = btoa(
+                new Uint8Array(arrayBuffer)
+                    .reduce((data, byte) => data + String.fromCharCode(byte), "")
+            );
+
+            // Save to Expo cache
             const fileUri = FileSystem.cacheDirectory + "ocr-text.docx";
-            await FileSystem.downloadAsync(docUrl, fileUri); // save raw bytes
-            await Sharing.shareAsync(fileUri);
+            await FileSystem.writeAsStringAsync(fileUri, base64String, {
+                encoding: FileSystem.EncodingType.Base64,
+            });
+
+            // Share the file
+            await Sharing.shareAsync(fileUri, {
+                mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                dialogTitle: "Share OCR Word file",
+                UTI: "com.microsoft.word.doc",
+            });
         } catch (err) {
             console.error("Error downloading/sharing DOCX:", err);
         }
     };
+
 
     const pickImage = async () => {
         try {

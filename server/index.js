@@ -2,6 +2,7 @@ import { DocumentProcessorServiceClient } from "@google-cloud/documentai";
 import cors from "cors";
 import { AlignmentType, Document, Packer, Paragraph, TextRun } from "docx";
 import dotenv from "dotenv";
+import 'dotenv/config';
 import express from "express";
 import fs from "fs";
 import multer from "multer";
@@ -10,15 +11,25 @@ import sharp from "sharp";
 import { fileURLToPath } from "url";
 
 
-/* ------------------ Load env ------------------ */
-dotenv.config();
+/* ------------------ Optional dotenv ------------------ */
+const envPath = path.resolve(".env");
+if (fs.existsSync(envPath)) {
+    console.log("Loading .env file");
+    dotenv.config({ path: envPath });
+} else {
+    console.log(".env file not found, using defaults");
+}
+
+console.log("PROJECT_ID:", process.env.PROJECT_ID);
+console.log("LOCATION:", process.env.LOCATION);
+console.log("PROCESSOR_ID:", process.env.PROCESSOR_ID);
 
 /* ------------------ Setup ------------------ */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -35,19 +46,21 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-/* ------------------ Document AI client ------------------ */
+/* ------------------ Env variables ------------------ */
 const projectId = process.env.PROJECT_ID;
 const location = process.env.LOCATION;
 const processorId = process.env.PROCESSOR_ID;
+const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
+console.log("projectId:", projectId, "location:", location, "processorId:", processorId);
 
+
+/* ------------------ Document AI client ------------------ */
 const client = new DocumentProcessorServiceClient({
-    keyFilename: path.join(__dirname, process.env.GOOGLE_APPLICATION_CREDENTIALS),
-    apiEndpoint: "eu-documentai.googleapis.com", // important for EU region
+    keyFilename: path.join(__dirname, "vision-key.json"),
+    apiEndpoint: "eu-documentai.googleapis.com",
 });
 
 /* ------------------ Helpers ------------------ */
-
-// Convert HEIC/PNG/TIFF → JPEG
 const convertToJPEG = async (inputPath) => {
     const ext = path.extname(inputPath).toLowerCase();
     if ([".heic", ".heif", ".png", ".tiff", ".tif", ".gif"].includes(ext)) {
@@ -58,7 +71,6 @@ const convertToJPEG = async (inputPath) => {
     return inputPath;
 };
 
-// Downscale large images (>20 MB)
 const downscaleImage = async (inputPath) => {
     const stats = fs.statSync(inputPath);
     if (stats.size > 20 * 1024 * 1024) {
@@ -71,15 +83,14 @@ const downscaleImage = async (inputPath) => {
 
 /* ------------------ OCR Endpoint ------------------ */
 app.post("/ocr", upload.single("file"), async (req, res) => {
+
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
     let filePath = req.file.path;
 
     try {
-        // Convert HEIC/PNG/TIFF → JPEG
+        // Convert and downscale if needed
         filePath = await convertToJPEG(filePath);
-
-        // Downscale if >20 MB
         filePath = await downscaleImage(filePath);
 
         const rawBytes = fs.readFileSync(filePath);
@@ -97,23 +108,34 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
         const doc = result.document;
         const text = doc?.text || "";
 
-        /* ------------------ Build DOCX with centered paragraphs & spacing ------------------ */
+        /* ------------------ Build DOCX with formatting ------------------ */
         const paragraphs = [];
 
-        (doc.pages || []).forEach(page => {
-            (page.paragraphs || []).forEach(para => {
-                const textRuns = (para.layout?.textAnchor?.textSegments || []).map(segment => {
+        (doc.pages || []).forEach((page) => {
+            (page.paragraphs || []).forEach((para) => {
+                const textRuns = (para.layout?.textAnchor?.textSegments || []).map((segment) => {
                     const start = parseInt(segment.startIndex || "0");
                     const end = parseInt(segment.endIndex || "0");
                     const wordText = text.slice(start, end);
-                    return new TextRun({ text: wordText + " " });
+
+                    // Bold or italic if detected
+                    const bold = para.detectedLanguages?.[0]?.confidence > 0.9; // example
+                    const italic = wordText.includes("_"); // simple placeholder
+
+                    return new TextRun({
+                        text: wordText + " ",
+                        bold,
+                        italics: italic,
+                        font: "Times New Roman",
+                        size: 24, // 12pt
+                    });
                 });
 
                 paragraphs.push(
                     new Paragraph({
                         children: textRuns,
-                        alignment: AlignmentType.CENTER,      // Center alignment
-                        spacing: { after: 200 },             // Space after paragraph
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 200 }, // space after paragraph
                     })
                 );
             });
@@ -128,7 +150,7 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
         /* ------------------ Respond with text + DOCX URL ------------------ */
         res.json({
             text,
-            docxUrl: `http://192.168.1.3:3000/${docFileName}`,
+            docxUrl: `${SERVER_URL}/${docFileName}`
         });
 
         // Cleanup uploaded/converted images
