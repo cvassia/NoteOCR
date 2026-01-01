@@ -1,12 +1,17 @@
 import { DocumentProcessorServiceClient } from "@google-cloud/documentai";
 import cors from "cors";
 import { AlignmentType, Document, Packer, Paragraph, TextRun } from "docx";
+import dotenv from "dotenv";
 import express from "express";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
 import sharp from "sharp";
 import { fileURLToPath } from "url";
+
+
+/* ------------------ Load env ------------------ */
+dotenv.config();
 
 /* ------------------ Setup ------------------ */
 const __filename = fileURLToPath(import.meta.url);
@@ -31,13 +36,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* ------------------ Document AI client ------------------ */
-const projectId = "noteocr-483011";
-const location = "eu";
-const processorId = "788d10a6fba8bc6a";
+const projectId = process.env.PROJECT_ID;
+const location = process.env.LOCATION;
+const processorId = process.env.PROCESSOR_ID;
 
 const client = new DocumentProcessorServiceClient({
-    keyFilename: path.join(__dirname, "vision-key.json"),
-    apiEndpoint: "eu-documentai.googleapis.com", // must match processor region
+    keyFilename: path.join(__dirname, process.env.GOOGLE_APPLICATION_CREDENTIALS),
+    apiEndpoint: "eu-documentai.googleapis.com", // important for EU region
 });
 
 /* ------------------ Helpers ------------------ */
@@ -92,12 +97,12 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
         const doc = result.document;
         const text = doc?.text || "";
 
-        /* ------------------ Build DOCX ------------------ */
+        /* ------------------ Build DOCX with centered paragraphs & spacing ------------------ */
         const paragraphs = [];
 
-        (doc.pages || []).forEach((page) => {
-            (page.paragraphs || []).forEach((para) => {
-                const textRuns = (para.layout?.textAnchor?.textSegments || []).map((segment) => {
+        (doc.pages || []).forEach(page => {
+            (page.paragraphs || []).forEach(para => {
+                const textRuns = (para.layout?.textAnchor?.textSegments || []).map(segment => {
                     const start = parseInt(segment.startIndex || "0");
                     const end = parseInt(segment.endIndex || "0");
                     const wordText = text.slice(start, end);
@@ -107,7 +112,8 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
                 paragraphs.push(
                     new Paragraph({
                         children: textRuns,
-                        alignment: AlignmentType.LEFT,
+                        alignment: AlignmentType.CENTER,      // Center alignment
+                        spacing: { after: 200 },             // Space after paragraph
                     })
                 );
             });
