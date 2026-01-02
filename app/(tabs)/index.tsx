@@ -13,12 +13,12 @@ import {
     TouchableOpacity
 } from "react-native";
 import { Colors } from "../../components/colors";
-
+import { useDocuments } from '../context/DocumentsContext';
 
 
 const SERVER_URL = `${REACT_NATIVE_SERVER_URL}/ocr`; // <-- include /ocr
 
-console.log("Server URL:", SERVER_URL);// const SERVER_URL = Platform.select({
+// const SERVER_URL = Platform.select({
 //     ios: ENV_SERVER_URL,
 //     android: ENV_SERVER_URL.includes("localhost") ? "http://10.0.2.2:3000" : ENV_SERVER_URL,
 //     default: ENV_SERVER_URL,
@@ -29,6 +29,8 @@ export default function OCRScreen() {
     const [ocrText, setOcrText] = useState<string>("");
     const [docxUrl, setDocxUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const { addDocument } = useDocuments();
+
 
     // Convert ANY image → JPEG (best for OCR)
     const convertToJPEG = async (uri: string): Promise<string> => {
@@ -117,6 +119,14 @@ export default function OCRScreen() {
             if (data.docxUrl) {
                 setDocxUrl(data.docxUrl);
             }
+
+            addDocument({
+                id: Date.now().toString(),
+                name: `document ${new Date().toLocaleDateString()}`,
+                url: data.docxUrl,
+                text: data.text || "",
+            });
+
         } catch (err) {
             console.error("OCR error:", err);
             setOcrText("OCR failed");

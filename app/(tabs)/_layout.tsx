@@ -35,14 +35,14 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="ocr"
+        name="index"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="sparkles" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="documents"
         options={{
           title: 'Documents',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="doc.text" color={color} />,
