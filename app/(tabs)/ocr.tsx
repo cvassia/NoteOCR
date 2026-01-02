@@ -6,12 +6,13 @@ import * as Sharing from "expo-sharing";
 import React, { useState } from "react";
 import {
     ActivityIndicator,
-    Button,
     Image,
     ScrollView,
     StyleSheet,
-    Text
+    Text,
+    TouchableOpacity
 } from "react-native";
+import { Colors } from "../../components/colors";
 
 
 
@@ -128,24 +129,25 @@ export default function OCRScreen() {
     return (
         <ScrollView contentContainerStyle={styles.container}>
 
-            {loading && <ActivityIndicator size="large" style={{ marginTop: 20 }} />}
+            {loading && <ActivityIndicator size="large" color={Colors.primary} />
+            }
 
-            {imageUri && (
+            {(!loading && imageUri) && (
                 <Image source={{ uri: imageUri }} style={styles.image} />
             )}
 
-            {ocrText !== "" && (
-                <Text style={styles.text}>{ocrText}</Text>
-            )}
-
             {docxUrl && (
-                <Button
-                    title="Download Word file"
+                <TouchableOpacity style={styles.primaryButton}
                     onPress={() => downloadDocx(docxUrl)}
-                />
-            )}
-            <Button title="Pick Image" onPress={pickImage} />
+                >
+                    <Text style={styles.primaryButtonText}>Download Word file</Text>
+                </TouchableOpacity>
 
+            )}
+            {!loading &&
+                <TouchableOpacity style={styles.primaryButton} onPress={pickImage}>
+                    <Text style={styles.primaryButtonText}>Pick Image</Text>
+                </TouchableOpacity>}
         </ScrollView>
     );
 }
@@ -153,7 +155,8 @@ export default function OCRScreen() {
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        padding: 50,
+        padding: 20,
+        backgroundColor: Colors.background,
     },
     image: {
         width: "100%",
@@ -164,5 +167,22 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 16,
         marginTop: 10,
+        color: Colors.background
     },
+    primaryButton: {
+        width: 100,
+        height: 100,
+        backgroundColor: Colors.primary,
+        paddingVertical: 14,
+        borderRadius: 16,
+        alignItems: "center",
+        marginTop: 16,
+    },
+
+    primaryButtonText: {
+        color: "#312C51",
+        fontWeight: "600",
+        fontSize: 16,
+    },
+
 });
