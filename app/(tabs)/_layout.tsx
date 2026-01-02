@@ -24,7 +24,7 @@ export default function TabLayout() {
           elevation: 0,
         },
 
-        tabBarActiveTintColor: Colors.secondary,
+        tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: "#A9A4C7",
         tabBarIconStyle: {
           marginBottom: 6,

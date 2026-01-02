@@ -224,7 +224,7 @@ export default function OCRScreen() {
             <>
               <BlurView intensity={100} tint="light" style={styles.glassContainer}>
                 <Text style={styles.text}>
-                  Take a photo or choose an image from your gallery to convert it in a docx file.
+                  Take a photo or choose an image from your gallery to convert it to a docx file.
                 </Text>
               </BlurView>
               <TouchableOpacity style={styles.pickFile} onPress={takePhoto}>
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     height: 360,
     position: "relative",
     overflow: "hidden",
-    marginBottom: 50
+    marginBottom: 60
   },
   headerImage: {
     // aspectRatio: 16 / 9,
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "rgba(49, 44, 81, 0.25)",
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)', // subtle glass border
+    borderColor: 'rgba(255, 255, 255, 0.3)',
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   },
   pickFile: {
     marginTop: 20,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.secondary,
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 20,
