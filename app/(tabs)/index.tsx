@@ -41,6 +41,8 @@ export const shareDocument = async (url: string, filename: string) => {
   }
 };
 
+
+
 export default function OCRScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [ocrText, setOcrText] = useState<string>("");
@@ -55,6 +57,59 @@ export default function OCRScreen() {
     });
     return result.uri;
   };
+
+  // New function to take a photo
+  const takePhoto = async () => {
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+      });
+
+      if (result.canceled) return;
+
+      setLoading(true);
+      setOcrText("");
+      setDocxUrl(null);
+
+      const originalUri = result.assets[0].uri;
+      const jpegUri = await convertToJPEG(originalUri);
+      setImageUri(jpegUri);
+
+      const formData = new FormData();
+      formData.append("file", {
+        uri: jpegUri,
+        name: "image.jpg",
+        type: "image/jpeg",
+      } as any);
+
+      const response = await fetch(SERVER_URL, {
+        method: "POST",
+        body: formData,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      const data = await response.json();
+      setOcrText(data.text || "No text detected");
+
+      if (data.docxUrl) setDocxUrl(data.docxUrl);
+
+      if (data.docxUrl) {
+        addDocument({
+          id: Date.now().toString(),
+          name: `document ${new Date().toLocaleDateString()}`,
+          url: data.docxUrl,
+          text: data.text || "",
+        });
+      }
+    } catch (err) {
+      console.error("OCR error:", err);
+      setOcrText("OCR failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const downloadDocx = async (docUrl: string) => {
     if (!docUrl) return;
@@ -172,7 +227,9 @@ export default function OCRScreen() {
                   Take a photo or choose an image from your gallery to convert it in a docx file.
                 </Text>
               </BlurView>
-
+              <TouchableOpacity style={styles.pickFile} onPress={takePhoto}>
+                <Text style={styles.ButtonText}>Take Photo</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.pickFile} onPress={pickImage}>
                 <Text style={styles.ButtonText}>Pick Image</Text>
               </TouchableOpacity>
@@ -183,6 +240,9 @@ export default function OCRScreen() {
             <>
               <TouchableOpacity style={styles.downloadButton} onPress={() => downloadDocx(docxUrl)}>
                 <Text style={styles.DownloadButtonText}>Download Word file</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.pickFile} onPress={takePhoto}>
+                <Text style={styles.ButtonText}>Take Another Photo</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pickFile} onPress={pickImage}>
                 <Text style={styles.ButtonText}>Pick Another Image</Text>
@@ -248,6 +308,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   pickFile: {
+    marginTop: 20,
     backgroundColor: Colors.primary,
     paddingVertical: 16,
     paddingHorizontal: 32,
