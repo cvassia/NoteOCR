@@ -48,13 +48,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="doc.text" color={color} />,
         }}
       />
-      {/* <Tabs.Screen
-        name="ocr"
+      <Tabs.Screen
+        name="settings"
         options={{
-          title: 'OCR',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="doc.text.fill" color={color} />,
+          title: 'Settings',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gear" color={color} />,
         }}
-      /> */}
+      />
 
     </Tabs>
   );

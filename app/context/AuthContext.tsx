@@ -82,13 +82,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     AppleAuthentication.AppleAuthenticationScope.EMAIL,
                 ],
             });
-            const userData = { id: credential.user, name: credential.fullName?.givenName };
+
+            const userData: User = {
+                id: credential.user,
+                name: credential.fullName?.givenName ?? undefined,
+                email: credential.email ?? undefined, // ⚠️ only available first login
+            };
+
             setUser(userData);
             await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
         } catch (err) {
-            console.log('Apple login canceled or failed', err);
+            console.log("Apple login canceled or failed", err);
         }
     };
+
 
     return (
         <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithApple, signOut }}>

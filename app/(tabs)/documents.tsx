@@ -36,8 +36,10 @@ export function AppleButton({ signIn }: AppleButtonProps) {
   if (!appleAvailable) return null; // Hide button if not available
 
   return (
-    <TouchableOpacity style={{ padding: 16, backgroundColor: 'black', borderRadius: 12 }} onPress={signIn}>
-      <Text style={{ color: 'white', fontWeight: 'bold' }}>Sign in with Apple</Text>
+    <TouchableOpacity style={{ padding: 16, backgroundColor: Colors.textPrimary, borderRadius: 12, width: 200 }} onPress={signIn}>
+      <Text style={{
+        fontWeight: 'bold', textAlign: "center", color: Colors.background
+      }}>Sign in with Apple</Text>
     </TouchableOpacity>
   );
 }
@@ -121,5 +123,5 @@ const styles = StyleSheet.create({
   authContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   authText: { fontSize: 18, marginBottom: 24, textAlign: 'center', color: '#312C51' },
   authButton: { backgroundColor: Colors.secondary, paddingVertical: 14, paddingHorizontal: 32, borderRadius: 12, marginBottom: 16 },
-  authButtonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  authButtonText: { color: Colors.background, fontWeight: '600', fontSize: 16 },
 });
