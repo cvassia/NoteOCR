@@ -109,7 +109,10 @@ export default function DocumentsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 40 },
+  container: {
+    padding: 20,
+    marginTop: 70
+  },
   docButton: { backgroundColor: Colors.primary, paddingVertical: 16, paddingHorizontal: 20, borderRadius: 20, marginBottom: 12 },
   docRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   docText: { color: '#312C51', fontWeight: '600', fontSize: 16 },

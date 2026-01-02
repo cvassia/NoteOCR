@@ -142,7 +142,7 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
         });
 
         const docx = new Document({ sections: [{ children: paragraphs }] });
-        const docFileName = `file_${Date.now()}.docx`;
+        const docFileName = `document_${new Date().toLocaleDateString("en-GB").replace(/\//g, '.').slice(0, 8)}.docx`
         const docPath = path.join(uploadDir, docFileName);
         const buffer = await Packer.toBuffer(docx);
         fs.writeFileSync(docPath, buffer);
