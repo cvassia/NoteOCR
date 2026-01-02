@@ -44,8 +44,8 @@ export const shareDocument = async (url: string, filename: string) => {
 
 
 export default function OCRScreen() {
-  const [imageUri, setImageUri] = useState<string | null>(null);
-  const [ocrText, setOcrText] = useState<string>("");
+  // const [imageUri, setImageUri] = useState<string | null>(null);
+  // const [ocrText, setOcrText] = useState<string>("");
   const [docxUrl, setDocxUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { addDocument } = useDocuments();
@@ -69,12 +69,12 @@ export default function OCRScreen() {
       if (result.canceled) return;
 
       setLoading(true);
-      setOcrText("");
+      // setOcrText("");
       setDocxUrl(null);
 
       const originalUri = result.assets[0].uri;
       const jpegUri = await convertToJPEG(originalUri);
-      setImageUri(jpegUri);
+      // setImageUri(jpegUri);
 
       const formData = new FormData();
       formData.append("file", {
@@ -90,7 +90,7 @@ export default function OCRScreen() {
       });
 
       const data = await response.json();
-      setOcrText(data.text || "No text detected");
+      // setOcrText(data.text || "No text detected");
 
       if (data.docxUrl) setDocxUrl(data.docxUrl);
 
@@ -104,7 +104,7 @@ export default function OCRScreen() {
       }
     } catch (err) {
       console.error("OCR error:", err);
-      setOcrText("OCR failed");
+      // setOcrText("OCR failed");
     } finally {
       setLoading(false);
     }
@@ -147,12 +147,12 @@ export default function OCRScreen() {
       if (result.canceled) return;
 
       setLoading(true);
-      setOcrText("");
+      // setOcrText("");
       setDocxUrl(null);
 
       const originalUri = result.assets[0].uri;
       const jpegUri = await convertToJPEG(originalUri);
-      setImageUri(jpegUri);
+      // setImageUri(jpegUri);
 
       const formData = new FormData();
       formData.append("file", {
@@ -168,7 +168,7 @@ export default function OCRScreen() {
       });
 
       const data = await response.json();
-      setOcrText(data.text || "No text detected");
+      // setOcrText(data.text || "No text detected");
 
       if (data.docxUrl) setDocxUrl(data.docxUrl);
 
@@ -182,7 +182,7 @@ export default function OCRScreen() {
       }
     } catch (err) {
       console.error("OCR error:", err);
-      setOcrText("OCR failed");
+      // setOcrText("OCR failed");
     } finally {
       setLoading(false);
     }
@@ -224,7 +224,7 @@ export default function OCRScreen() {
             <>
               <BlurView intensity={100} tint="light" style={styles.glassContainer}>
                 <Text style={styles.text}>
-                  Take a photo or choose an image from your gallery to convert it to a docx file.
+                  Take a photo or choose an image from your gallery to convert it into an editable Word file
                 </Text>
               </BlurView>
               <TouchableOpacity style={styles.pickFile} onPress={takePhoto}>
@@ -303,8 +303,8 @@ const styles = StyleSheet.create({
     color: Colors.backgroundTabs,
     justifyContent: "center",
     alignItems: "center",
-    lineHeight: 25,
-    fontSize: 18,
+    lineHeight: 30,
+    fontSize: 19,
     elevation: 6,
   },
   pickFile: {
