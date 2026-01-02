@@ -7,12 +7,17 @@ Offline-Capable OCR Mobile App with Greek & English Support and Word Export
 
 **NoteOCR** is a mobile application built with **Expo (React Native)** and a **Node.js OCR server** that allows users to:
 
-- Pick an image from their device
+- Pick an image from their device or take a photo of a document
 - Perform OCR (Optical Character Recognition)
 - Recognize **Greek (Ελληνικά)** and **English** text
 - Preserve paragraph structure as much as possible
 - Export the recognized text into a **Microsoft Word (.docx)** file
 - Download or share the Word document from the mobile device
+- Manage documents if logged in:
+   Rename
+   Delete (with confirmation)
+   Share
+- Open documents directly from the app
 
 This app is designed primarily for **documents**, such as:
 - Legal documents
@@ -39,6 +44,15 @@ The app consists of **two parts**:
 - Supports **Greek (ell)** and **English (eng)**
 - Generates `.docx` files
 - Serves generated Word files to the client
+- Exposes document management endpoints:
+
+   GET /documents → lists available documents
+
+   POST /documents → adds a document (if persisted backend is implemented)
+
+   PATCH /documents/:id → renames a document
+
+   DELETE /documents/:id → deletes a document
 
 ---
 
@@ -65,18 +79,22 @@ The app consists of **two parts**:
 
 NoteOCR/
 ├── app/
-│ └── (tabs)/
-│ └── ocr.tsx # OCR screen
+│   └── (tabs)/
+│       ├── ocr.tsx      # OCR screen
+│       ├── documents.tsx # Document list and management
+│       └── settings.tsx  # Settings screen with user profile and help
 ├── server/
-│ ├── index.js # OCR server
-│ ├── uploads/ # Uploaded images + generated DOCX
-│ └── package.json
+│   ├── index.js          # OCR server
+│   ├── uploads/          # Uploaded images + generated DOCX
+│   └── package.json
 ├── README.md
+
+
 ---
 
 ## 📱 Mobile App Flow
 
-1. User taps **Pick Image**
+1. User taps Pick Image or Take Photo
 2. Image is selected from gallery
 3. Image is converted to **real JPEG**
 4. Image is uploaded to the OCR server
@@ -85,6 +103,27 @@ NoteOCR/
    - Displayed on screen
    - Exported to a Word document
 7. User can **download or share** the `.docx` file
+8. User logs in (optional but enables document management)
+
+---
+
+## 🔐 Authentication
+
+Google Sign-In (all platforms)
+
+Apple Sign-In (iOS only)
+
+Auth state is stored in AsyncStorage
+
+When logged in, users can manage their documents directly
+
+User profile shows:
+
+Avatar illustration
+
+Email (if available)
+
+Sign out button
 
 ---
 
@@ -102,12 +141,8 @@ This ensures compatibility with Tesseract.
 
 ## 🔎 OCR Details
 
-- OCR Engine: **Tesseract.js**
-- Languages:
-  - English: `eng`
-  - Greek: `ell`
-- Combined mode:   `eng + ell`
-
+- OCR Engine: **GoogleDocumentAI**
+- Languages: all
 
 
 ### ⚠️ OCR Limitations (Important)
@@ -148,6 +183,58 @@ The document is generated using the **docx** library and saved on the server.
 ### POST `/ocr`
 
 Uploads an image and returns OCR results.
+
+---
+
+## 📥 Document Management
+
+If logged in:
+
+Rename: Tap pencil icon → enter a new name
+
+Delete: Tap trash icon → confirm deletion via alert
+
+Open: Tap document → opens the Word file
+
+Share: Tap plane icon → share via email, cloud, or messaging apps
+
+All changes are persisted locally and can be persisted on backend if the server implements:
+
+PATCH /documents/:id → rename
+
+DELETE /documents/:id → delete
+
+---
+
+## 🌐 Server API
+OCR
+
+POST /ocr
+Uploads an image and returns OCR results + .docx file URL
+
+Documents
+
+GET /documents → returns a list of .docx documents
+
+POST /documents → adds a document
+
+PATCH /documents/:id → renames a document
+
+DELETE /documents/:id → deletes a document
+
+---
+
+## ⚙️ Settings
+
+View profile info (avatar + email)
+
+Help section (explains app functionality)
+
+Licenses section
+
+Sign out button
+
+
 
 ### Running the Project
 
