@@ -1,8 +1,10 @@
 // eslint-disable-next-line import/no-unresolved
 import { REACT_NATIVE_SERVER_URL } from "@env";
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { Alert } from "react-native";
 
-type DocumentItem = {
+
+export type DocumentItem = {
     id: string;
     name: string;
     url: string;
@@ -14,6 +16,8 @@ type DocumentsContextType = {
     documents: DocumentItem[];
     fetchDocuments: () => Promise<void>;
     addDocument: (doc: DocumentItem) => void;
+    renameDocument: (id: string, newName: string) => void;
+    deleteDocument: (id: string) => void;
 };
 
 // Use only base server URL
@@ -23,6 +27,8 @@ const DocumentsContext = createContext<DocumentsContextType>({
     documents: [],
     fetchDocuments: async () => { },
     addDocument: () => { },
+    renameDocument: () => { },
+    deleteDocument: () => { },
 });
 
 export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
@@ -38,11 +44,64 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const addDocument = (doc: DocumentItem) => {
-        // Add locally
-        setDocuments((prev) => [doc, ...prev]);
-        // NOTE: POST to server is not supported unless you add endpoint
-        // You can implement POST /documents server-side if needed
+    // Add a document
+    const addDocument = async (doc: DocumentItem) => {
+        setDocuments(prev => [doc, ...prev]);
+        try {
+            await fetch(`${SERVER_URL}/documents`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(doc),
+            });
+        } catch (err) {
+            console.error("Error posting document:", err);
+        }
+    };
+
+    // Rename a document
+    const renameDocument = async (id: string, newName: string) => {
+        setDocuments(prev => prev.map(d => (d.id === id ? { ...d, name: newName } : d)));
+        try {
+            await fetch(`${SERVER_URL}/documents/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: newName }),
+            });
+        } catch (err) {
+            console.error("Error renaming document:", err);
+        }
+    };
+
+    // Delete a document
+    const deleteDocument = async (id: string) => {
+        // Find the document name for the alert
+        const doc = documents.find(d => d.id === id);
+
+        if (!doc) return;
+
+        // Show confirmation alert
+        Alert.alert(
+            "Delete Document",
+            `Are you sure you want to delete "${doc.name}"?`,
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        // Remove locally
+                        setDocuments(prev => prev.filter(d => d.id !== id));
+
+                        // Remove from backend
+                        try {
+                            await fetch(`${SERVER_URL}/documents/${id}`, { method: "DELETE" });
+                        } catch (err) {
+                            console.error("Error deleting document:", err);
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     useEffect(() => {
@@ -50,7 +109,7 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     return (
-        <DocumentsContext.Provider value={{ documents, fetchDocuments, addDocument }}>
+        <DocumentsContext.Provider value={{ documents, fetchDocuments, addDocument, renameDocument, deleteDocument }}>
             {children}
         </DocumentsContext.Provider>
     );

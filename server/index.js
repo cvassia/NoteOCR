@@ -166,6 +166,8 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
 app.get("/", (req, res) => res.send("OCR server running"));
 
 /* ------------------ Documents list endpoint ------------------ */
+
+//Get documents
 app.get("/documents", (req, res) => {
     try {
         if (!fs.existsSync(uploadDir)) return res.json([]);
@@ -175,10 +177,10 @@ app.get("/documents", (req, res) => {
         const docs = files
             .filter(file => file.endsWith(".docx")) // only DOCX files
             .map(file => ({
-                id: file, // you can also generate UUIDs if you prefer
-                name: file.replace(/^\d+_/, ""), // remove timestamp prefix
+                id: file,
+                name: file.replace(/^\d+_/, ""),
                 url: `${SERVER_URL}/${file}`,
-                uploadedAt: fs.statSync(path.join(uploadDir, file)).birthtime, // optional
+                uploadedAt: fs.statSync(path.join(uploadDir, file)).birthtime,
             }));
 
         res.json(docs);
@@ -187,6 +189,51 @@ app.get("/documents", (req, res) => {
         res.status(500).json({ error: "Failed to fetch documents" });
     }
 });
+
+/* ------------------ Rename document ------------------ */
+app.patch("/documents/:id", (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name } = req.body;
+
+        const oldPath = path.join(uploadDir, id);
+
+        if (!fs.existsSync(oldPath)) return res.status(404).json({ error: "Document not found" });
+
+        const ext = path.extname(id);
+        const newFileName = `${Date.now()}_${name}${ext}`;
+        const newPath = path.join(uploadDir, newFileName);
+
+        fs.renameSync(oldPath, newPath);
+
+        res.json({
+            id: newFileName,
+            name,
+            url: `${SERVER_URL}/${newFileName}`,
+        });
+    } catch (err) {
+        console.error("Error renaming document:", err);
+        res.status(500).json({ error: "Failed to rename document" });
+    }
+});
+
+/* ------------------ Delete document ------------------ */
+app.delete("/documents/:id", (req, res) => {
+    try {
+        const { id } = req.params;
+        const filePath = path.join(uploadDir, id);
+
+        if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Document not found" });
+
+        fs.unlinkSync(filePath);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Error deleting document:", err);
+        res.status(500).json({ error: "Failed to delete document" });
+    }
+});
+
 
 
 /* ------------------ Start server ------------------ */

@@ -3,18 +3,21 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   GestureResponderEvent,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { Colors } from '../../components/colors';
 import { IconSymbol } from '../../components/ui/icon-symbol';
 import { useAuth } from '../context/AuthContext';
-import { useDocuments } from '../context/DocumentsContext';
+import { DocumentItem, useDocuments } from '../context/DocumentsContext';
 import { shareDocument } from './index';
+
 
 
 type AppleButtonProps = {
@@ -46,15 +49,41 @@ export function AppleButton({ signIn }: AppleButtonProps) {
 
 export default function DocumentsScreen() {
   const { user, loading, signInWithGoogle, signInWithApple } = useAuth();
-  const { documents, fetchDocuments } = useDocuments();
+  const { documents, fetchDocuments, deleteDocument, renameDocument } = useDocuments();
   const [loadingDocs, setLoadingDocs] = useState(false);
+  // const [docsState, setDocsState] = useState(documents);
+  const [renameModalVisible, setRenameModalVisible] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null);
+  const [newName, setNewName] = useState("");
+
+
 
   useEffect(() => {
     if (user) {
       setLoadingDocs(true);
-      fetchDocuments().finally(() => setLoadingDocs(false));
+      fetchDocuments()
+        .finally(() => setLoadingDocs(false));
     }
+
   }, [fetchDocuments, user]);
+
+  /** Open the document */
+  const openDocument = async (url: string) => {
+    if (typeof window === 'undefined') return; // only run on client
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        alert('Cannot open this document');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error opening document');
+    }
+  };
+
 
   // Show spinner while checking login state
   if (loading || loadingDocs) {
@@ -64,7 +93,6 @@ export default function DocumentsScreen() {
       </View>
     );
   }
-
 
 
   // User not logged in
@@ -92,21 +120,71 @@ export default function DocumentsScreen() {
 
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {documents.map((doc) => (
-        <TouchableOpacity
-          key={doc.id}
-          style={styles.docButton}
-          onPress={() => shareDocument(doc.url, doc.name)}
-        >
-          <View style={styles.docRow}>
-            <IconSymbol name="doc.text" size={24} color={Colors.card} />
-            <Text style={styles.docText}>{doc.name}</Text>
+    <>
+      <ScrollView contentContainerStyle={styles.container}>
+        {documents.map(doc => (
+          <View key={doc.id} style={styles.docRowContainer}>
+            <TouchableOpacity style={styles.iconRow} onPress={() => openDocument(doc.url)}>
+              <View style={styles.docRow}>
+                <IconSymbol name="doc.text" size={24} color={Colors.card} />
+                <Text style={styles.docText}>{doc.name}</Text>
+              </View>
+            </TouchableOpacity>
+            <View style={styles.iconRow}>
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedDoc(doc);
+                  setNewName(doc.name);
+                  setRenameModalVisible(true);
+                }}
+              >
+                <IconSymbol name="pencil.and.outline" size={22} color={Colors.background} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => deleteDocument(doc.id)}>
+                <IconSymbol name="trash" size={22} color="red" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => shareDocument(doc.url, doc.name)}>
+                <IconSymbol name="paperplane" size={22} color={Colors.background} style={{ marginTop: 5 }} />
+              </TouchableOpacity>
+            </View>
           </View>
-        </TouchableOpacity>
-      ))
-      }
-    </ScrollView >
+        ))}
+
+
+      </ScrollView>
+      {renameModalVisible && selectedDoc && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Rename Document</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={newName}
+              onChangeText={setNewName}
+              placeholder="Enter new name"
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: Colors.secondary }]}
+                onPress={() => setRenameModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: Colors.primary }]}
+                onPress={() => {
+                  if (newName.trim() !== "") {
+                    renameDocument(selectedDoc.id, newName.trim());
+                    setRenameModalVisible(false);
+                  }
+                }}
+              >
+                <Text style={styles.modalButtonText}>Rename</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )
+      }</>
   );
 }
 
@@ -115,8 +193,23 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 70
   },
-  docButton: { backgroundColor: Colors.primary, paddingVertical: 16, paddingHorizontal: 20, borderRadius: 20, marginBottom: 12 },
-  docRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  docRowContainer: {
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    borderRadius: 20,
+    textAlign: "center"
+  },
+  iconRow: {
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  docRow: { flexDirection: 'row', alignItems: 'center', gap: 15 },
   docText: { color: '#312C51', fontWeight: '600', fontSize: 16 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
   emptyText: { fontSize: 16, color: '#A9A4C7' },
@@ -124,4 +217,53 @@ const styles = StyleSheet.create({
   authText: { fontSize: 18, marginBottom: 24, textAlign: 'center', color: '#312C51' },
   authButton: { backgroundColor: Colors.secondary, paddingVertical: 14, paddingHorizontal: 32, borderRadius: 12, marginBottom: 16 },
   authButtonText: { color: Colors.background, fontWeight: '600', fontSize: 16 },
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+  },
+  modalContainer: {
+    width: "80%",
+    backgroundColor: Colors.background,
+    borderRadius: 20,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 12,
+    color: Colors.primary,
+    textAlign: "center",
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: Colors.secondary,
+    borderRadius: 12,
+    padding: 10,
+    fontSize: 16,
+    marginBottom: 20,
+    color: Colors.primary,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginHorizontal: 5,
+    alignItems: "center",
+  },
+  modalButtonText: {
+    color: Colors.background,
+    fontWeight: "600",
+    fontSize: 16,
+  },
 });
