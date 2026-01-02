@@ -142,7 +142,7 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
         });
 
         const docx = new Document({ sections: [{ children: paragraphs }] });
-        const docFileName = `ocr_${Date.now()}.docx`;
+        const docFileName = `file_${Date.now()}.docx`;
         const docPath = path.join(uploadDir, docFileName);
         const buffer = await Packer.toBuffer(docx);
         fs.writeFileSync(docPath, buffer);
@@ -164,6 +164,30 @@ app.post("/ocr", upload.single("file"), async (req, res) => {
 
 /* ------------------ Health check ------------------ */
 app.get("/", (req, res) => res.send("OCR server running"));
+
+/* ------------------ Documents list endpoint ------------------ */
+app.get("/documents", (req, res) => {
+    try {
+        if (!fs.existsSync(uploadDir)) return res.json([]);
+
+        const files = fs.readdirSync(uploadDir);
+
+        const docs = files
+            .filter(file => file.endsWith(".docx")) // only DOCX files
+            .map(file => ({
+                id: file, // you can also generate UUIDs if you prefer
+                name: file.replace(/^\d+_/, ""), // remove timestamp prefix
+                url: `${SERVER_URL}/${file}`,
+                uploadedAt: fs.statSync(path.join(uploadDir, file)).birthtime, // optional
+            }));
+
+        res.json(docs);
+    } catch (err) {
+        console.error("Error fetching documents:", err);
+        res.status(500).json({ error: "Failed to fetch documents" });
+    }
+});
+
 
 /* ------------------ Start server ------------------ */
 app.listen(PORT, () => {

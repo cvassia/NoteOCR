@@ -1,0 +1,100 @@
+// eslint-disable-next-line import/no-unresolved
+import { GOOGLE_ANDROID_CLIENT_ID, GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Google from 'expo-auth-session/providers/google';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
+
+const getGoogleClientConfig = () => Platform.select({
+    web: { clientId: GOOGLE_WEB_CLIENT_ID },
+    ios: { clientId: GOOGLE_IOS_CLIENT_ID },
+    android: { clientId: GOOGLE_ANDROID_CLIENT_ID },
+});
+type User = {
+    id: string;
+    name?: string;
+    email?: string;
+};
+
+type AuthContextType = {
+    user: User | null;
+    loading: boolean;
+    signInWithGoogle: () => Promise<void>;
+    signInWithApple: () => Promise<void>;
+    signOut: () => void;
+};
+
+const STORAGE_KEY = 'APP_USER';
+
+const AuthContext = createContext<AuthContextType>({
+    user: null,
+    loading: true,
+    signInWithGoogle: async () => { },
+    signInWithApple: async () => { },
+    signOut: () => { },
+});
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    /** Load user from storage on mount */
+    useEffect(() => {
+        (async () => {
+            const storedUser = await AsyncStorage.getItem(STORAGE_KEY);
+            if (storedUser) setUser(JSON.parse(storedUser));
+            setLoading(false);
+        })();
+    }, []);
+
+    /** Sign out */
+    const signOut = async () => {
+        setUser(null);
+        await AsyncStorage.removeItem(STORAGE_KEY);
+    };
+
+    /** Google login */
+    const [request, response, promptAsync] = Google.useAuthRequest(getGoogleClientConfig());
+
+    useEffect(() => {
+        if (response?.type === 'success') {
+            const { authentication } = response;
+            if (authentication) {
+                // For simplicity, store a dummy user object
+                const userData = { id: authentication.accessToken!, name: 'Google User' };
+                setUser(userData);
+                AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+            }
+        }
+    }, [response]);
+
+    const signInWithGoogle = async () => {
+        await promptAsync();
+    };
+
+    /** Apple login */
+    const signInWithApple = async () => {
+        try {
+            const credential = await AppleAuthentication.signInAsync({
+                requestedScopes: [
+                    AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                    AppleAuthentication.AppleAuthenticationScope.EMAIL,
+                ],
+            });
+            const userData = { id: credential.user, name: credential.fullName?.givenName };
+            setUser(userData);
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+        } catch (err) {
+            console.log('Apple login canceled or failed', err);
+        }
+    };
+
+    return (
+        <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithApple, signOut }}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
+
+export const useAuth = () => useContext(AuthContext);
