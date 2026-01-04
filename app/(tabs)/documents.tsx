@@ -1,5 +1,6 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   GestureResponderEvent,
@@ -26,6 +27,7 @@ type AppleButtonProps = {
 
 export function AppleButton({ signIn }: AppleButtonProps) {
   const [appleAvailable, setAppleAvailable] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     (async () => {
@@ -42,12 +44,14 @@ export function AppleButton({ signIn }: AppleButtonProps) {
     <TouchableOpacity style={{ padding: 16, backgroundColor: Colors.textPrimary, borderRadius: 12, width: 200 }} onPress={signIn}>
       <Text style={{
         fontWeight: 'bold', textAlign: "center", color: Colors.background
-      }}>Sign in with Apple</Text>
+      }}>{t("signInApple")}</Text>
     </TouchableOpacity>
   );
 }
 
 export default function DocumentsScreen() {
+  const { t } = useTranslation();
+
   const { user, loading, signInWithGoogle, signInWithApple } = useAuth();
   const { documents, fetchDocuments, deleteDocument, renameDocument } = useDocuments();
   const [loadingDocs, setLoadingDocs] = useState(false);
@@ -99,9 +103,9 @@ export default function DocumentsScreen() {
   if (!user) {
     return (
       <View style={styles.authContainer}>
-        <Text style={styles.authText}>Log in or Sign up to see your documents</Text>
+        <Text style={styles.authText}>{t("logInOrSignUp")}</Text>
         <TouchableOpacity style={styles.authButton} onPress={signInWithGoogle}>
-          <Text style={styles.authButtonText}>Log in with Google</Text>
+          <Text style={styles.authButtonText}>{t("login")}</Text>
         </TouchableOpacity>
         <AppleButton signIn={signInWithApple} />
 
@@ -112,7 +116,7 @@ export default function DocumentsScreen() {
   if (documents.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No documents yet.</Text>
+        <Text style={styles.emptyText}>{t("noDocuments")}</Text>
       </View>
     );
   }
@@ -155,19 +159,19 @@ export default function DocumentsScreen() {
       {renameModalVisible && selectedDoc && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Rename Document</Text>
+            <Text style={styles.modalTitle}>{t("renameDocument")}</Text>
             <TextInput
               style={styles.modalInput}
               value={newName}
               onChangeText={setNewName}
-              placeholder="Enter new name"
+              placeholder={t("enterNewName")}
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: Colors.secondary }]}
                 onPress={() => setRenameModalVisible(false)}
               >
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text style={styles.modalButtonText}>{t("cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: Colors.primary }]}
@@ -178,7 +182,7 @@ export default function DocumentsScreen() {
                   }
                 }}
               >
-                <Text style={styles.modalButtonText}>Rename</Text>
+                <Text style={styles.modalButtonText}>{t("rename")}</Text>
               </TouchableOpacity>
             </View>
           </View>

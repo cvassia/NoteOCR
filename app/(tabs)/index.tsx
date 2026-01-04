@@ -7,6 +7,7 @@ import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Sharing from "expo-sharing";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Image,
@@ -44,8 +45,9 @@ export const shareDocument = async (url: string, filename: string) => {
 
 
 export default function OCRScreen() {
-  const [imageUri, setImageUri] = useState<string | null>(null);
-  const [ocrText, setOcrText] = useState<string>("");
+  const { t } = useTranslation();
+  // const [imageUri, setImageUri] = useState<string | null>(null);
+  // const [ocrText, setOcrText] = useState<string>("");
   const [docxUrl, setDocxUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { addDocument } = useDocuments();
@@ -69,12 +71,12 @@ export default function OCRScreen() {
       if (result.canceled) return;
 
       setLoading(true);
-      setOcrText("");
+      // setOcrText("");
       setDocxUrl(null);
 
       const originalUri = result.assets[0].uri;
       const jpegUri = await convertToJPEG(originalUri);
-      setImageUri(jpegUri);
+      // setImageUri(jpegUri);
 
       const formData = new FormData();
       formData.append("file", {
@@ -90,7 +92,7 @@ export default function OCRScreen() {
       });
 
       const data = await response.json();
-      setOcrText(data.text || "No text detected");
+      // setOcrText(data.text || "No text detected");
 
       if (data.docxUrl) setDocxUrl(data.docxUrl);
 
@@ -104,7 +106,7 @@ export default function OCRScreen() {
       }
     } catch (err) {
       console.error("OCR error:", err);
-      setOcrText("OCR failed");
+      // setOcrText("OCR failed");
     } finally {
       setLoading(false);
     }
@@ -147,12 +149,12 @@ export default function OCRScreen() {
       if (result.canceled) return;
 
       setLoading(true);
-      setOcrText("");
+      // setOcrText("");
       setDocxUrl(null);
 
       const originalUri = result.assets[0].uri;
       const jpegUri = await convertToJPEG(originalUri);
-      setImageUri(jpegUri);
+      // setImageUri(jpegUri);
 
       const formData = new FormData();
       formData.append("file", {
@@ -168,7 +170,7 @@ export default function OCRScreen() {
       });
 
       const data = await response.json();
-      setOcrText(data.text || "No text detected");
+      // setOcrText(data.text || "No text detected");
 
       if (data.docxUrl) setDocxUrl(data.docxUrl);
 
@@ -182,7 +184,7 @@ export default function OCRScreen() {
       }
     } catch (err) {
       console.error("OCR error:", err);
-      setOcrText("OCR failed");
+      // setOcrText("OCR failed");
     } finally {
       setLoading(false);
     }
@@ -224,14 +226,14 @@ export default function OCRScreen() {
             <>
               <BlurView intensity={100} tint="light" style={styles.glassContainer}>
                 <Text style={styles.text}>
-                  Take a photo or choose an image from your gallery to convert it in a docx file.
+                  {t("homeText")}
                 </Text>
               </BlurView>
               <TouchableOpacity style={styles.pickFile} onPress={takePhoto}>
-                <Text style={styles.ButtonText}>Take Photo</Text>
+                <Text style={styles.ButtonText}>{t("takePhoto")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pickFile} onPress={pickImage}>
-                <Text style={styles.ButtonText}>Pick Image</Text>
+                <Text style={styles.ButtonText}>{t("pickImage")}</Text>
               </TouchableOpacity>
             </>
 
@@ -239,13 +241,13 @@ export default function OCRScreen() {
           {docxUrl && (
             <>
               <TouchableOpacity style={styles.downloadButton} onPress={() => downloadDocx(docxUrl)}>
-                <Text style={styles.DownloadButtonText}>Download Word file</Text>
+                <Text style={styles.DownloadButtonText}>{t("downloadDocx")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pickFile} onPress={takePhoto}>
-                <Text style={styles.ButtonText}>Take Another Photo</Text>
+                <Text style={styles.ButtonText}>{t("takeAnotherPhoto")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pickFile} onPress={pickImage}>
-                <Text style={styles.ButtonText}>Pick Another Image</Text>
+                <Text style={styles.ButtonText}>{t("pickAnotherImage")}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -269,7 +271,7 @@ const styles = StyleSheet.create({
     height: 360,
     position: "relative",
     overflow: "hidden",
-    marginBottom: 50
+    marginBottom: 60
   },
   headerImage: {
     // aspectRatio: 16 / 9,
@@ -293,7 +295,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "rgba(49, 44, 81, 0.25)",
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)', // subtle glass border
+    borderColor: 'rgba(255, 255, 255, 0.3)',
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -303,13 +305,13 @@ const styles = StyleSheet.create({
     color: Colors.backgroundTabs,
     justifyContent: "center",
     alignItems: "center",
-    lineHeight: 25,
+    lineHeight: 30,
     fontSize: 18,
     elevation: 6,
   },
   pickFile: {
     marginTop: 20,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.secondary,
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 20,
@@ -336,7 +338,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   DownloadButtonText: {
-    color: Colors.primary,
+    color: Colors.secondary,
     fontWeight: "600",
     fontSize: 18,
   },
