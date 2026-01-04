@@ -1,5 +1,6 @@
 import * as AppleAuthentication from "expo-apple-authentication";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Image,
     LayoutAnimation,
@@ -13,6 +14,8 @@ import {
 } from "react-native";
 import { Colors } from "../../components/colors";
 import { useAuth } from "../context/AuthContext";
+import i18n from "../utils";
+
 
 /* Enable animation on Android */
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -21,10 +24,13 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 
 export default function SettingsScreen() {
     const { user, signInWithGoogle, signInWithApple, signOut } = useAuth();
+    const { t } = useTranslation();
 
     const [showHelp, setShowHelp] = useState(false);
     const [showLicenses, setShowLicenses] = useState(false);
     const [appleAvailable, setAppleAvailable] = useState(false);
+    const [showLanguage, setShowLanguage] = useState(false);
+
 
     useEffect(() => {
         (async () => {
@@ -39,7 +45,10 @@ export default function SettingsScreen() {
         setter((prev) => !prev);
     };
 
-    console.log(user)
+    const changeLanguage = (lang: "en" | "el") => {
+        i18n.changeLanguage(lang);
+    };
+
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -54,10 +63,10 @@ export default function SettingsScreen() {
                     <Text style={styles.email}>{user.email}</Text>
                 ) : (
                     <>
-                        <Text style={styles.authText}>Sign in to sync your documents</Text>
+                        <Text style={styles.authText}>{t("signIn")}</Text>
 
                         <TouchableOpacity style={styles.authButton} onPress={signInWithGoogle}>
-                            <Text style={styles.authButtonText}>Continue with Google</Text>
+                            <Text style={styles.authButtonText}>{t("continueWithGoogle")}</Text>
                         </TouchableOpacity>
 
                         {appleAvailable && (
@@ -65,48 +74,98 @@ export default function SettingsScreen() {
                                 style={[styles.authButton, styles.appleButton]}
                                 onPress={signInWithApple}
                             >
-                                <Text style={styles.appleButtonText}>Continue with Apple</Text>
+                                <Text style={styles.appleButtonText}>{t("continueWithApple")}</Text>
                             </TouchableOpacity>
                         )}
                     </>
                 )}
             </View>
+            {/* LANGUAGE */}
+            <TouchableOpacity style={styles.row} onPress={() => { toggle(setShowLanguage) }}>
+                <Text style={styles.rowTitle}>{t("language")}</Text>
+            </TouchableOpacity>
+
+            {showLanguage && (
+                <View style={styles.dropdown}>
+                    <TouchableOpacity
+                        style={styles.languageOption}
+                        onPress={() => {
+                            changeLanguage("en");
+                            toggle(setShowLanguage)
+                        }}
+                    >
+                        <Text style={styles.languageText}>🇬🇧 English</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.languageOption}
+                        onPress={() => {
+                            changeLanguage("el");
+                            toggle(setShowLanguage)
+                        }}
+                    >
+                        <Text style={styles.languageText}>🇬🇷 Ελληνικά</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
             {/* HELP */}
-            <TouchableOpacity style={styles.row} onPress={() => toggle(setShowHelp)}>
-                <Text style={styles.rowTitle}>Help</Text>
+            <TouchableOpacity style={styles.row} onPress={() => {
+                toggle(setShowHelp);
+                showLicenses && toggle(setShowLicenses);
+            }}>
+                <Text style={styles.rowTitle}>{t("help")}</Text>
             </TouchableOpacity>
 
             {showHelp && (
                 <View style={styles.dropdown}>
                     <Text style={styles.dropdownText}>
-                        This app lets you turn photos of documents into editable Word files.
+                        {t("helpText1")}
                         {"\n\n"}
-                        Simply upload an image, and the app uses advanced OCR technology to
-                        extract text while preserving formatting.
+                        {t("helpText2")}
                         {"\n\n"}
-                        Your documents are securely stored and can be accessed anytime after
-                        signing in.
+                        {t("helpText3")}
+                        {"\n\n"}
+                        {t("helpText4")}
+                        {"\n\n"}
+                        {t("helpText5")}
+                        {"\n\n"}
+                        {t("helpText6")}
+                        {"\n\n"}
+                        {t("helpText7")}
+                        {"\n\n"}
+                        {t("helpText8")}
+                        {"\n\n"}
+                        {t("helpText9")}
+                        {"\n\n"}
+                        {t("helpText10")}
+                        {"\n\n"}
+                        {t("helpText11")}
+                        {"\n\n"}
+                        {t("helpText12")}
                     </Text>
                 </View>
             )}
 
             {/* LICENSES */}
-            <TouchableOpacity style={styles.row} onPress={() => toggle(setShowLicenses)}>
-                <Text style={styles.rowTitle}>License</Text>
+            <TouchableOpacity style={styles.row} onPress={() => {
+                showHelp && toggle(setShowHelp);
+                toggle(setShowLicenses)
+            }}>
+                <Text style={styles.rowTitle}>{t("license")}</Text>
             </TouchableOpacity>
 
             {showLicenses && (
                 <View style={styles.dropdown}>
                     <Text style={styles.dropdownText}>
-                        This app uses open-source software and third-party services:
+                        {t("licenseText1")}
                         {"\n\n"}
                         • Google Document AI – OCR processing{"\n"}
                         • Expo SDK – Mobile framework{"\n"}
                         • React Native – UI framework{"\n"}
                         • docx – Word document generation
                         {"\n\n"}
-                        All trademarks and services belong to their respective owners.
+                        {t("licenseText2")}
                     </Text>
                 </View>
             )}
@@ -114,7 +173,7 @@ export default function SettingsScreen() {
             {/* SIGN OUT */}
             {user && (
                 <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
-                    <Text style={styles.signOutText}>Sign Out</Text>
+                    <Text style={styles.signOutText}>{t("signOut")}</Text>
                 </TouchableOpacity>
             )}
         </ScrollView>
@@ -167,8 +226,6 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         color: Colors.secondary,
     },
-
-
     authButton: {
         backgroundColor: Colors.secondary,
         paddingVertical: 14,
@@ -224,4 +281,13 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         fontSize: 16,
     },
+    languageOption: {
+        paddingVertical: 10,
+    },
+    languageText: {
+        fontSize: 19,
+        color: Colors.secondary,
+        lineHeight: 22,
+    },
+
 });

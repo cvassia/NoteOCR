@@ -1,7 +1,9 @@
 // eslint-disable-next-line import/no-unresolved
 import { REACT_NATIVE_SERVER_URL } from "@env";
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
+
 
 
 export type DocumentItem = {
@@ -32,6 +34,9 @@ const DocumentsContext = createContext<DocumentsContextType>({
 });
 
 export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
+
+    const { t } = useTranslation();
+
     const [documents, setDocuments] = useState<DocumentItem[]>([]);
 
     const fetchDocuments = async () => {
@@ -81,12 +86,12 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
 
         // Show confirmation alert
         Alert.alert(
-            "Delete Document",
-            `Are you sure you want to delete "${doc.name}"?`,
+            t("deleteDocument"),
+            t("deleteConfirm", { name: doc.name }),
             [
-                { text: "Cancel", style: "cancel" },
+                { text: t("cancel"), style: "cancel" },
                 {
-                    text: "Delete",
+                    text: t("deleteDocument"),
                     style: "destructive",
                     onPress: async () => {
                         // Remove locally

@@ -7,6 +7,7 @@ import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Sharing from "expo-sharing";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Image,
@@ -44,6 +45,7 @@ export const shareDocument = async (url: string, filename: string) => {
 
 
 export default function OCRScreen() {
+  const { t } = useTranslation();
   // const [imageUri, setImageUri] = useState<string | null>(null);
   // const [ocrText, setOcrText] = useState<string>("");
   const [docxUrl, setDocxUrl] = useState<string | null>(null);
@@ -224,14 +226,14 @@ export default function OCRScreen() {
             <>
               <BlurView intensity={100} tint="light" style={styles.glassContainer}>
                 <Text style={styles.text}>
-                  Take a photo or choose an image from your gallery to convert it into an editable Word file
+                  {t("homeText")}
                 </Text>
               </BlurView>
               <TouchableOpacity style={styles.pickFile} onPress={takePhoto}>
-                <Text style={styles.ButtonText}>Take Photo</Text>
+                <Text style={styles.ButtonText}>{t("takePhoto")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pickFile} onPress={pickImage}>
-                <Text style={styles.ButtonText}>Pick Image</Text>
+                <Text style={styles.ButtonText}>{t("pickImage")}</Text>
               </TouchableOpacity>
             </>
 
@@ -239,13 +241,13 @@ export default function OCRScreen() {
           {docxUrl && (
             <>
               <TouchableOpacity style={styles.downloadButton} onPress={() => downloadDocx(docxUrl)}>
-                <Text style={styles.DownloadButtonText}>Download Word file</Text>
+                <Text style={styles.DownloadButtonText}>{t("downloadDocx")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pickFile} onPress={takePhoto}>
-                <Text style={styles.ButtonText}>Take Another Photo</Text>
+                <Text style={styles.ButtonText}>{t("takeAnotherPhoto")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.pickFile} onPress={pickImage}>
-                <Text style={styles.ButtonText}>Pick Another Image</Text>
+                <Text style={styles.ButtonText}>{t("pickAnotherImage")}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -304,7 +306,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     lineHeight: 30,
-    fontSize: 19,
+    fontSize: 18,
     elevation: 6,
   },
   pickFile: {
@@ -336,7 +338,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   DownloadButtonText: {
-    color: Colors.primary,
+    color: Colors.secondary,
     fontWeight: "600",
     fontSize: 18,
   },
