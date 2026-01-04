@@ -1,4 +1,5 @@
 import { DocumentProcessorServiceClient } from "@google-cloud/documentai";
+import { Buffer } from "buffer";
 import cors from "cors";
 import { AlignmentType, Document, Packer, Paragraph, TextRun } from "docx";
 import dotenv from "dotenv";
@@ -9,6 +10,16 @@ import multer from "multer";
 import path from "path";
 import sharp from "sharp";
 import { fileURLToPath } from "url";
+
+
+
+/* ------------------ Vercel Base64 Key Setup ------------------ */
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    const keyPath = path.join(__dirname, 'vision-key.json');
+    const keyBase64 = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    const keyJson = Buffer.from(keyBase64, 'base64').toString('utf-8');
+    fs.writeFileSync(keyPath, keyJson);
+}
 
 
 /* ------------------ Optional dotenv ------------------ */
