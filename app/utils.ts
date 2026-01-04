@@ -7,8 +7,18 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
     en: {
         translation: {
+            welcome: "Welcome to Image2Doc",
+            welcomeText1: "For the best results, the quality of the photo is very important.\n\nFollow these simple tips to get the most accurate text recognition: ",
+            welcomeText2: "1. Ensure good lighting:\n Take the photo in a well-lit area to avoid shadows.\n\n2.Place the document on a flat surface.\n\n3. Keep the document flat: \nMake sure the document is straight and not folded or skewed.\n\n4. Avoid shadows falling on the paper.\n\n5. Fill the frame: Get as close as possible to the document while keeping it fully in the frame.",
+            welcomeText3: "6. Make sure all edges of the page are visible in the frame.",
+            welcomeText4: "7. Ensure the image is sharp and in focus.\n\n8. Tap the screen to focus before taking the photo.\n\n9. If text looks blurry, move slightly farther away and try again.\n\n10.Avoid photographing documents inside plastic covers.\n\n11.Do not use flash.",
+            description: "Turn photos of documents into editable Word files.",
+            getStarted: "Get Started",
+            languageChange: "you can change the language anytime from the settings.",
+            instructions: "Instructions",
             pickImage: "Pick Image",
             takePhoto: "Take Photo",
+            continue: "Continue",
             takeAnotherPhoto: "Take Another Photo",
             pickAnotherImage: "Pick Another Image",
             downloadDocx: "Download Word file",
@@ -53,6 +63,16 @@ const resources = {
     },
     el: {
         translation: {
+            welcome: "Καλωσορίσατε στο Image2Doc",
+            welcomeText1: "Για τα καλύτερα αποτελέσματα, η ποιότητα της φωτογραφίας είναι πολύ σημαντική.\n\nΑκολουθήστε αυτές τις συμβουλές για να έχετε την πιο ακριβή αναγνώριση κειμένου:",
+            welcomeText2: "1. Εξασφαλίστε καλό φωτισμό:\n Τραβήξτε τη φωτογραφία σε καλά φωτισμένο χώρο για να αποφύγετε τις σκιές.\n\n2.Τοποθετήστε το έγγραφο σε επίπεδη επιφάνεια. \n\n3.Κρατήστε το έγγραφο επίπεδο:\n Βεβαιωθείτε ότι το έγγραφο είναι ευθυγραμμισμένο και δεν είναι διπλωμένο ή στραβό.\n\n4. Αποφύγετε τις σκιές που πέφτουν στο χαρτί.\n\n5. Γεμίστε το πλαίσιο:\n Πλησιάστε όσο το δυνατόν περισσότερο στο έγγραφο διατηρώντας το πλήρως μέσα στο πλαίσιο.",
+            welcomeText3: "5. Τοποθετήστε το έγγραφο σε επίπεδη επιφάνεια.\n\n6. Βεβαιωθείτε ότι όλες οι άκρες της σελίδας είναι ορατές στο πλαίσιο.",
+            welcomeText4: "7. Βεβαιωθείτε ότι η εικόνα είναι καθαρή και εστιασμένη.\n\n8. Πατήστε την οθόνη για εστίαση πριν τραβήξετε τη φωτογραφία.\n\n9. Εάν το κείμενο φαίνεται θολό, απομακρυνθείτε ελαφρώς και δοκιμάστε ξανά.\n\n10. Αποφύγετε τη φωτογράφιση εγγράφων μέσα σε πλαστικά καλύμματα.\n\n11. Μην χρησιμοποιείτε φλας.",
+            description: "Μετατρέψτε φωτογραφίες εγγράφων σε επεξεργάσιμα αρχεία Word.",
+            getStarted: "Ξεκινήστε",
+            instructions: "Οδηγίες",
+            languageChange: "μπορείτε να αλλάξετε τη γλώσσα οποιαδήποτε στιγμή από τις ρυθμίσεις.",
+            continue: "Συνέχεια",
             pickImage: "Επιλέξτε εικόνα",
             takePhoto: "Τραβήξτε φωτογραφία",
             takeAnotherPhoto: "Τραβήξτε άλλη φωτογραφία",
@@ -113,3 +133,4 @@ i18n
     });
 
 export default i18n;
+

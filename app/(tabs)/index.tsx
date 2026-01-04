@@ -124,7 +124,7 @@ export default function OCRScreen() {
         new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
       );
 
-      const fileUri = FileSystem.cacheDirectory + "ocr-text.docx";
+      const fileUri = FileSystem.cacheDirectory + "document.docx";
       await FileSystem.writeAsStringAsync(fileUri, base64String, {
         encoding: FileSystem.EncodingType.Base64,
       });

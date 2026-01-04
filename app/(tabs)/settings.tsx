@@ -30,6 +30,8 @@ export default function SettingsScreen() {
     const [showLicenses, setShowLicenses] = useState(false);
     const [appleAvailable, setAppleAvailable] = useState(false);
     const [showLanguage, setShowLanguage] = useState(false);
+    const [showInstruction, setShowInstruction] = useState(false);
+
 
 
     useEffect(() => {
@@ -108,11 +110,35 @@ export default function SettingsScreen() {
                     </TouchableOpacity>
                 </View>
             )}
+            {/* INSTRUCTIONS */}
+            <TouchableOpacity style={styles.row} onPress={() => {
+                toggle(setShowInstruction);
+                showLicenses && toggle(setShowLicenses);
+                showHelp && toggle(setShowHelp);
+
+            }}>
+                <Text style={styles.rowTitle}>{t("instructions")}</Text>
+            </TouchableOpacity>
+
+            {showInstruction && (
+                <View style={styles.dropdown}>
+                    <Text style={styles.dropdownText}>
+                        {t("welcomeText1")}
+                        {"\n\n"}
+                        {t("welcomeText2")}
+                        {"\n\n"}
+                        {t("welcomeText3")}
+                        {"\n\n"}
+                        {t("welcomeText4")}
+                    </Text>
+                </View>
+            )}
 
             {/* HELP */}
             <TouchableOpacity style={styles.row} onPress={() => {
                 toggle(setShowHelp);
                 showLicenses && toggle(setShowLicenses);
+                showInstruction && toggle(setShowInstruction);
             }}>
                 <Text style={styles.rowTitle}>{t("help")}</Text>
             </TouchableOpacity>
@@ -150,6 +176,7 @@ export default function SettingsScreen() {
             {/* LICENSES */}
             <TouchableOpacity style={styles.row} onPress={() => {
                 showHelp && toggle(setShowHelp);
+                showInstruction && toggle(setShowInstruction);
                 toggle(setShowLicenses)
             }}>
                 <Text style={styles.rowTitle}>{t("license")}</Text>
