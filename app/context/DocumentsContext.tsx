@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-unresolved
-import { REACT_NATIVE_SERVER_URL } from "@env";
+
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
@@ -23,7 +22,7 @@ type DocumentsContextType = {
 };
 
 // Use only base server URL
-const SERVER_URL = REACT_NATIVE_SERVER_URL;
+const SERVER_URL = process.env.REACT_NATIVE_SERVER_URL;
 
 const DocumentsContext = createContext<DocumentsContextType>({
     documents: [],

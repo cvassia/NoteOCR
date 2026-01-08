@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-unresolved
-import { REACT_NATIVE_SERVER_URL } from "@env";
+
 import { BlurView } from 'expo-blur';
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -22,7 +21,7 @@ import { Colors } from "../../components/colors";
 import { useDocuments } from '../context/DocumentsContext';
 
 
-const SERVER_URL = `${REACT_NATIVE_SERVER_URL}/ocr`;
+const SERVER_URL = `${process.env.REACT_NATIVE_SERVER_URL}/ocr`;
 
 export const shareDocument = async (url: string, filename: string) => {
   try {
