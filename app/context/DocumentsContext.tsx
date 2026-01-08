@@ -34,6 +34,7 @@ const DocumentsContext = createContext<DocumentsContextType>({
 });
 
 export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
+    console.log("SERVER URL:", SERVER_URL);
 
     const { t } = useTranslation();
 
@@ -55,7 +56,6 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
         try {
             await fetch(`${SERVER_URL}/documents`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(doc),
             });
         } catch (err) {
@@ -69,7 +69,6 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
         try {
             await fetch(`${SERVER_URL}/documents/${id}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name: newName }),
             });
         } catch (err) {

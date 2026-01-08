@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "NoteOCR",
+    "name": "Image2Doc",
     "slug": "NoteOCR",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,9 +9,13 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.cvassia.image2doc",
+      "supportsTablet": true,
+      "buildNumber": "1.0.0"
     },
     "android": {
+      "package": "com.cvassia.image2doc",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -43,6 +47,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "serverUrl": "https://noteocr-backend.onrender.com",
+      "router": {},
+      "eas": {
+        "projectId": "7dbff3f3-4594-4302-83d1-63b6bc91931d"
+      }
     }
   }
 }
