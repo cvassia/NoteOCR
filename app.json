@@ -2,7 +2,7 @@
   "expo": {
     "name": "Image2Doc",
     "slug": "NoteOCR",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "noteocr",
@@ -10,11 +10,11 @@
     "ios": {
       "bundleIdentifier": "com.cvassia.image2doc",
       "supportsTablet": true,
-      "buildNumber": "1.0.0"
+      "buildNumber": "1.0.2"
     },
     "android": {
       "package": "com.cvassia.image2doc",
-      "versionCode": 1,
+      "versionCode": 15,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -44,8 +44,8 @@
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 34,
-            "targetSdkVersion": 34,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
             "minSdkVersion": 24
           }
         }
