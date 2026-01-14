@@ -1,4 +1,5 @@
-
+// eslint-disable-next-line import/no-unresolved
+import { EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID, EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Google from 'expo-auth-session/providers/google';
@@ -6,9 +7,9 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 import { Platform } from 'react-native';
 
 const getGoogleClientConfig = () => Platform.select({
-    web: { clientId: process.env.GOOGLE_WEB_CLIENT_ID },
-    ios: { clientId: process.env.GOOGLE_IOS_CLIENT_ID },
-    android: { clientId: process.env.GOOGLE_ANDROID_CLIENT_ID },
+    web: { clientId: EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID },
+    ios: { clientId: EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID },
+    android: { clientId: EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID },
 });
 type User = {
     id: string;

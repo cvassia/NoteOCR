@@ -1,5 +1,8 @@
 
+// eslint-disable-next-line import/no-unresolved
+import { REACT_NATIVE_SERVER_URL } from "@env";
 import { BlurView } from 'expo-blur';
+import Constants from "expo-constants";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -21,7 +24,15 @@ import { Colors } from "../../components/colors";
 import { useDocuments } from '../context/DocumentsContext';
 
 
-const SERVER_URL = `${process.env.REACT_NATIVE_SERVER_URL}/ocr`;
+
+// const SERVER_URL = `${process.env.REACT_NATIVE_SERVER_URL}/ocr`;
+const SERVER_URL = `${REACT_NATIVE_SERVER_URL}/ocr`;
+
+
+if (!Constants.expoConfig?.extra?.serverUrl) {
+  console.warn("SERVER_URL is not set in app.json extra!");
+}
+
 
 export const shareDocument = async (url: string, filename: string) => {
   try {
@@ -51,6 +62,7 @@ export default function OCRScreen() {
   const [loading, setLoading] = useState(false);
   const { addDocument } = useDocuments();
 
+
   const convertToJPEG = async (uri: string): Promise<string> => {
     const result = await ImageManipulator.manipulateAsync(uri, [], {
       compress: 0.95,
@@ -59,8 +71,20 @@ export default function OCRScreen() {
     return result.uri;
   };
 
+  const requestPermissions = async () => {
+    const cam = await ImagePicker.requestCameraPermissionsAsync();
+    const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (cam.status !== "granted" || lib.status !== "granted") {
+      alert("Camera and media library permissions are required!");
+      return false;
+    }
+    return true;
+  };
+
   // New function to take a photo
   const takePhoto = async () => {
+    const granted = await requestPermissions();
+    if (!granted) return;
     try {
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
