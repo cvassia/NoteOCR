@@ -47,7 +47,7 @@ export default function RootLayout() {
               {!hasOpened && <Redirect href="/welcome/language" />}
 
               {/* Main screens */}
-              <Stack.Screen name="welcome/welcome" />
+              <Stack.Screen name="welcome" />
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
             </Stack>

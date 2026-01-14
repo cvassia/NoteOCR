@@ -1,6 +1,6 @@
 
-// eslint-disable-next-line import/no-unresolved
-import { REACT_NATIVE_SERVER_URL } from "@env";
+
+// import { REACT_NATIVE_SERVER_URL } from "@env";
 import { BlurView } from 'expo-blur';
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -24,8 +24,8 @@ import { useDocuments } from '../../context/DocumentsContext';
 
 
 
-// const SERVER_URL = `${process.env.REACT_NATIVE_SERVER_URL}/ocr`;
-const SERVER_URL = `${REACT_NATIVE_SERVER_URL}/ocr`;
+const SERVER_URL = `${process.env.EXPO_PUBLIC_REACT_NATIVE_SERVER_URL}/ocr`;
+// const SERVER_URL = `${REACT_NATIVE_SERVER_URL}/ocr`;
 
 
 export const shareDocument = async (url: string, filename: string) => {
@@ -45,6 +45,30 @@ export const shareDocument = async (url: string, filename: string) => {
     console.error("Error sharing document:", err);
   }
 };
+
+const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 10000) => {
+  return new Promise<Response>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error("The request timed out. Please check your internet connection."));
+    }, timeout);
+
+    fetch(url, options)
+      .then(response => {
+        clearTimeout(timer);
+        resolve(response);
+      })
+      .catch(err => {
+        clearTimeout(timer);
+        // Customize messages for different cases
+        if (err.message === 'Network request failed') {
+          reject(new Error("Cannot reach the server. Please check your internet or try again later."));
+        } else {
+          reject(err);
+        }
+      });
+  });
+};
+
 
 
 
@@ -102,7 +126,7 @@ export default function OCRScreen() {
         type: "image/jpeg",
       } as any);
 
-      const response = await fetch(SERVER_URL, {
+      const response = await fetchWithTimeout(SERVER_URL, {
         method: "POST",
         body: formData,
       });
@@ -121,7 +145,9 @@ export default function OCRScreen() {
         });
       }
     } catch (err) {
+
       console.error("OCR error:", err);
+      throw new Error("Failed to upload image");
       // setOcrText("OCR failed");
     } finally {
       setLoading(false);
@@ -152,6 +178,7 @@ export default function OCRScreen() {
       });
     } catch (err) {
       console.error("Error downloading/sharing DOCX:", err);
+      throw new Error("Error downloading/sharing DOCX");
     }
   };
 
@@ -199,6 +226,7 @@ export default function OCRScreen() {
       }
     } catch (err) {
       console.error("OCR error:", err);
+      throw new Error("Failed to pick image");
       // setOcrText("OCR failed");
     } finally {
       setLoading(false);
