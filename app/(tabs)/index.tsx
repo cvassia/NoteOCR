@@ -2,7 +2,6 @@
 // eslint-disable-next-line import/no-unresolved
 import { REACT_NATIVE_SERVER_URL } from "@env";
 import { BlurView } from 'expo-blur';
-import Constants from "expo-constants";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -21,17 +20,12 @@ import {
   View
 } from "react-native";
 import { Colors } from "../../components/colors";
-import { useDocuments } from '../context/DocumentsContext';
+import { useDocuments } from '../../context/DocumentsContext';
 
 
 
 // const SERVER_URL = `${process.env.REACT_NATIVE_SERVER_URL}/ocr`;
 const SERVER_URL = `${REACT_NATIVE_SERVER_URL}/ocr`;
-
-
-if (!Constants.expoConfig?.extra?.serverUrl) {
-  console.warn("SERVER_URL is not set in app.json extra!");
-}
 
 
 export const shareDocument = async (url: string, filename: string) => {

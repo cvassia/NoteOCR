@@ -13,8 +13,8 @@ import {
     View
 } from "react-native";
 import { Colors } from "../../components/colors";
-import { useAuth } from "../context/AuthContext";
-import i18n from "../utils";
+import { useAuth } from "../../context/AuthContext";
+import i18n from "../../utils";
 
 
 /* Enable animation on Android */

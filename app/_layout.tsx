@@ -8,9 +8,9 @@ import { I18nextProvider } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
 import 'react-native-reanimated';
 import { AppDarkTheme, AppLightTheme } from '../components/ui/theme';
-import { AuthProvider } from './context/AuthContext';
-import { DocumentsProvider } from './context/DocumentsContext';
-import i18n from './utils';
+import { AuthProvider } from '../context/AuthContext';
+import { DocumentsProvider } from '../context/DocumentsContext';
+import i18n from '../utils';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -47,7 +47,7 @@ export default function RootLayout() {
               {!hasOpened && <Redirect href="/welcome/language" />}
 
               {/* Main screens */}
-              <Stack.Screen name="welcome" />
+              <Stack.Screen name="welcome/welcome" />
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
             </Stack>

@@ -15,8 +15,8 @@ import {
 } from 'react-native';
 import { Colors } from '../../components/colors';
 import { IconSymbol } from '../../components/ui/icon-symbol';
-import { useAuth } from '../context/AuthContext';
-import { DocumentItem, useDocuments } from '../context/DocumentsContext';
+import { useAuth } from '../../context/AuthContext';
+import { DocumentItem, useDocuments } from '../../context/DocumentsContext';
 import { shareDocument } from './index';
 
 
