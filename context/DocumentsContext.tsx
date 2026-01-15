@@ -1,9 +1,10 @@
 
 
 // import { EXPO_PUBLIC_REACT_NATIVE_SERVER_URL } from "@env";
-import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
+import { useAuth } from "./AuthContext";
 
 
 
@@ -18,106 +19,157 @@ export type DocumentItem = {
 
 type DocumentsContextType = {
     documents: DocumentItem[];
-    fetchDocuments: () => Promise<void>;
-    addDocument: (doc: DocumentItem) => void;
-    renameDocument: (id: string, newName: string) => void;
-    deleteDocument: (id: string) => void;
+    loading: boolean;
+    addLocal: (doc: DocumentItem) => void;
+    refresh: () => Promise<void>;
+    rename: (id: string, newName: string) => Promise<void>;
+    remove: (id: string) => Promise<void>;
 };
 
 // Use only base server URL
 // const SERVER_URL = EXPO_PUBLIC_REACT_NATIVE_SERVER_URL;
-const SERVER_URL = `${process.env.EXPO_PUBLIC_REACT_NATIVE_SERVER_URL}`;
+const SERVER_URL = process.env.EXPO_PUBLIC_REACT_NATIVE_SERVER_URL!;
 
 
 const DocumentsContext = createContext<DocumentsContextType>({
     documents: [],
-    fetchDocuments: async () => { },
-    addDocument: () => { },
-    renameDocument: () => { },
-    deleteDocument: () => { },
+    loading: false,
+    addLocal: () => { },
+    refresh: async () => { },
+    rename: async () => { },
+    remove: async () => { },
 });
 
 export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
-    console.log("SERVER URL:", SERVER_URL);
 
+    const { user } = useAuth();
     const { t } = useTranslation();
 
     const [documents, setDocuments] = useState<DocumentItem[]>([]);
+    const [loading, setLoading] = useState(false);
 
-    const fetchDocuments = async () => {
+
+    /**
+   * Fetch user documents
+   */
+    const refresh = useCallback(async () => {
+        if (!user) return;
+
+        setLoading(true);
         try {
-            const res = await fetch(`${SERVER_URL}/documents`);
+            const res = await fetch(
+                `${SERVER_URL}/documents?userId=${user.id}`
+            );
+
+            if (!res.ok) throw new Error("Failed to fetch documents");
+
             const data = await res.json();
-            setDocuments(data.reverse()); // newest first
+            setDocuments(data);
         } catch (err) {
-            console.error("Error fetching documents:", err);
+            console.error("Fetch documents error:", err);
+        } finally {
+            setLoading(false);
         }
-    };
+    }, [user]);
 
-    // Add a document
-    const addDocument = async (doc: DocumentItem) => {
+
+
+    // Add document locally (after OCR)
+    const addLocal = (doc: DocumentItem) => {
+        console.log("Adding local document:", doc);
+
         setDocuments(prev => [doc, ...prev]);
-        try {
-            await fetch(`${SERVER_URL}/documents`, {
-                method: "POST",
-                body: JSON.stringify(doc),
-            });
-        } catch (err) {
-            console.error("Error posting document:", err);
-        }
+        refresh()
     };
 
-    // Rename a document
-    const renameDocument = async (id: string, newName: string) => {
-        setDocuments(prev => prev.map(d => (d.id === id ? { ...d, name: newName } : d)));
+    /**
+     * Rename document
+     */
+    const rename = async (id: string, newName: string) => {
+        const previous = documents;
+
+        // optimistic update
+        setDocuments(docs =>
+            docs.map(d => (d.id === id ? { ...d, name: newName } : d))
+        );
         try {
-            await fetch(`${SERVER_URL}/documents/${id}`, {
+            const res = await fetch(`${SERVER_URL}/documents/${id}`, {
                 method: "PATCH",
-                body: JSON.stringify({ name: newName }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: newName, userId: user && user.id
+                }),
             });
+            if (!res.ok) throw new Error("Rename failed");
         } catch (err) {
-            console.error("Error renaming document:", err);
+            console.error("Rename document error:", err);
+            setDocuments(previous);
+            Alert.alert(t("error"), t("renameFailed"));
         }
+        refresh()
     };
 
-    // Delete a document
-    const deleteDocument = async (id: string) => {
-        // Find the document name for the alert
+    /**
+     * Delete document
+     */
+    const remove = async (id: string) => {
         const doc = documents.find(d => d.id === id);
+
 
         if (!doc) return;
 
-        // Show confirmation alert
         Alert.alert(
             t("deleteDocument"),
             t("deleteConfirm", { name: doc.name }),
             [
                 { text: t("cancel"), style: "cancel" },
                 {
-                    text: t("deleteDocument"),
+                    text: t("delete"),
                     style: "destructive",
                     onPress: async () => {
-                        // Remove locally
-                        setDocuments(prev => prev.filter(d => d.id !== id));
+                        const previous = documents;
+                        setDocuments(docs => docs.filter(d => d.id !== id));
 
-                        // Remove from backend
                         try {
-                            await fetch(`${SERVER_URL}/documents/${id}`, { method: "DELETE" });
+                            const res = await fetch(
+                                `${SERVER_URL}/documents/${id}`,
+                                {
+                                    method: "DELETE",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ userId: user && user.id })
+                                }
+                            );
+
+                            if (!res.ok) throw new Error("Delete failed");
                         } catch (err) {
-                            console.error("Error deleting document:", err);
+                            console.error("Delete document error:", err);
+                            setDocuments(previous);
+                            Alert.alert(t("error"), t("deleteFailed"));
                         }
-                    }
-                }
+                    },
+                },
             ]
         );
     };
 
+    /**
+ * Auto-fetch when user logs in
+ */
     useEffect(() => {
-        fetchDocuments();
-    }, []);
+        refresh();
+    }, [refresh]);
 
     return (
-        <DocumentsContext.Provider value={{ documents, fetchDocuments, addDocument, renameDocument, deleteDocument }}>
+        <DocumentsContext.Provider
+            value={{
+                documents,
+                loading,
+                addLocal,
+                refresh,
+                rename,
+                remove,
+            }}
+        >
             {children}
         </DocumentsContext.Provider>
     );
