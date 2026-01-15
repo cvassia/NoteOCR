@@ -20,6 +20,7 @@ import {
   View
 } from "react-native";
 import { Colors } from "../../components/colors";
+import { useAuth } from '../../context/AuthContext';
 import { useDocuments } from '../../context/DocumentsContext';
 
 
@@ -78,7 +79,8 @@ export default function OCRScreen() {
   // const [ocrText, setOcrText] = useState<string>("");
   const [docxUrl, setDocxUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { addDocument } = useDocuments();
+  const { addLocal } = useDocuments();
+  const { user } = useAuth();
 
 
   const convertToJPEG = async (uri: string): Promise<string> => {
@@ -103,6 +105,8 @@ export default function OCRScreen() {
   const takePhoto = async () => {
     const granted = await requestPermissions();
     if (!granted) return;
+    setLoading(true);
+
     try {
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -111,7 +115,6 @@ export default function OCRScreen() {
 
       if (result.canceled) return;
 
-      setLoading(true);
       // setOcrText("");
       setDocxUrl(null);
 
@@ -126,6 +129,8 @@ export default function OCRScreen() {
         type: "image/jpeg",
       } as any);
 
+      user && formData.append("userId", user.id);
+
       const response = await fetchWithTimeout(SERVER_URL, {
         method: "POST",
         body: formData,
@@ -136,12 +141,14 @@ export default function OCRScreen() {
 
       if (data.docxUrl) setDocxUrl(data.docxUrl);
 
-      if (data.docxUrl) {
-        addDocument({
-          id: Date.now().toString(),
-          name: `document ${new Date().toLocaleDateString()}`,
-          url: data.docxUrl,
-          text: data.text || "",
+      if (data.docxUrl && data.document) {
+        setDocxUrl(data.docxUrl);
+        addLocal({
+          _id: data.document._id,
+          name: data.document.name,
+          url: data.document.url,
+          text: data.document.text,
+          uploadedAt: data.document.uploadedAt,
         });
       }
     } catch (err) {
@@ -184,6 +191,8 @@ export default function OCRScreen() {
 
   const pickImage = async () => {
     try {
+      setLoading(true);
+
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         quality: 1,
@@ -191,7 +200,6 @@ export default function OCRScreen() {
 
       if (result.canceled) return;
 
-      setLoading(true);
       // setOcrText("");
       setDocxUrl(null);
 
@@ -206,7 +214,9 @@ export default function OCRScreen() {
         type: "image/jpeg",
       } as any);
 
-      const response = await fetch(SERVER_URL, {
+      user && formData.append("userId", user.id);
+
+      const response = await fetchWithTimeout(SERVER_URL, {
         method: "POST",
         body: formData,
       });
@@ -216,12 +226,14 @@ export default function OCRScreen() {
 
       if (data.docxUrl) setDocxUrl(data.docxUrl);
 
-      if (data.docxUrl) {
-        addDocument({
-          id: Date.now().toString(),
-          name: `document ${new Date().toLocaleDateString()}`,
-          url: data.docxUrl,
-          text: data.text || "",
+      if (data.docxUrl && data.document) {
+        setDocxUrl(data.docxUrl);
+        addLocal({
+          _id: data.document._id,
+          name: data.document.name,
+          url: data.document.url,
+          text: data.document.text,
+          uploadedAt: data.document.uploadedAt,
         });
       }
     } catch (err) {

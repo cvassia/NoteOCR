@@ -57,7 +57,7 @@ export default function SettingsScreen() {
             {/* USER HEADER */}
             <View style={styles.header}>
                 <Image
-                    source={require('../../assets/images/avatar.png')} // your illustration
+                    source={require('../../assets/images/avatar.png')}
                     style={styles.avatarImage}
                     resizeMode="contain"
                 />
