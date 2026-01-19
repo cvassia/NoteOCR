@@ -82,7 +82,6 @@ export default function DocumentsScreen() {
     }, [refresh])
   );
 
-  console.log("documentsPage", documents)
 
   const [renameModalVisible, setRenameModalVisible] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null);
@@ -95,11 +94,11 @@ export default function DocumentsScreen() {
       if (supported) {
         await Linking.openURL(url);
       } else {
-        alert(t("cannotOpenDocument"));
+        console.warn(t("cannotOpenDocument"));
       }
     } catch (err) {
       console.error(err);
-      alert(t("errorOpeningDocument"));
+      console.warn(t("errorOpeningDocument"));
     }
   };
 

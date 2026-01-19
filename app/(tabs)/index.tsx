@@ -25,7 +25,7 @@ import { useDocuments } from '../../context/DocumentsContext';
 
 
 
-const SERVER_URL = `${process.env.EXPO_PUBLIC_REACT_NATIVE_SERVER_URL}/ocr`;
+const SERVER_URL = `${process.env.EXPO_PUBLIC_API_URL}/ocr`;
 // const SERVER_URL = `${REACT_NATIVE_SERVER_URL}/ocr`;
 
 
@@ -35,7 +35,7 @@ export const shareDocument = async (url: string, filename: string) => {
     const { uri } = await FileSystem.downloadAsync(url, localUri);
 
     const canShare = await Sharing.isAvailableAsync();
-    if (!canShare) throw new Error("Sharing is not available on this device");
+    if (!canShare) console.warn("Sharing is not available on this device");
 
     await Sharing.shareAsync(uri, {
       mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -47,7 +47,7 @@ export const shareDocument = async (url: string, filename: string) => {
   }
 };
 
-const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 10000) => {
+const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 80000) => {
   return new Promise<Response>((resolve, reject) => {
     const timer = setTimeout(() => {
       reject(new Error("The request timed out. Please check your internet connection."));
@@ -144,7 +144,7 @@ export default function OCRScreen() {
       if (data.docxUrl && data.document) {
         setDocxUrl(data.docxUrl);
         addLocal({
-          _id: data.document._id,
+          id: data.document._id,
           name: data.document.name,
           url: data.document.url,
           text: data.document.text,
@@ -154,7 +154,7 @@ export default function OCRScreen() {
     } catch (err) {
 
       console.error("OCR error:", err);
-      throw new Error("Failed to upload image");
+      console.warn("Failed to upload image");
       // setOcrText("OCR failed");
     } finally {
       setLoading(false);
@@ -166,7 +166,7 @@ export default function OCRScreen() {
     if (!docUrl) return;
     try {
       const response = await fetch(docUrl);
-      if (!response.ok) throw new Error("Failed to fetch DOCX from server");
+      if (!response.ok) console.warn("Failed to fetch DOCX from server");
 
       const arrayBuffer = await response.arrayBuffer();
       const base64String = btoa(
@@ -185,7 +185,7 @@ export default function OCRScreen() {
       });
     } catch (err) {
       console.error("Error downloading/sharing DOCX:", err);
-      throw new Error("Error downloading/sharing DOCX");
+      console.warn("Error downloading/sharing DOCX");
     }
   };
 
@@ -224,6 +224,7 @@ export default function OCRScreen() {
       const data = await response.json();
       // setOcrText(data.text || "No text detected");
 
+
       if (data.docxUrl) setDocxUrl(data.docxUrl);
 
       if (data.docxUrl && data.document) {
@@ -238,7 +239,7 @@ export default function OCRScreen() {
       }
     } catch (err) {
       console.error("OCR error:", err);
-      throw new Error("Failed to pick image");
+      console.warn("Failed to pick image");
       // setOcrText("OCR failed");
     } finally {
       setLoading(false);
