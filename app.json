@@ -9,8 +9,14 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
-      
+      "supportsTablet": true,
+      "bundleIdentifier": "com.smartLab.Image2Word",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+           "NSCameraUsageDescription": "Used to scan documents",
+        "NSPhotoLibraryUsageDescription": "Used to select images for OCR"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -44,6 +50,12 @@
     "experiments": {
       "typedRoutes": false,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7dbff3f3-4594-4302-83d1-63b6bc91931d"
+      }
     }
   }
 }
