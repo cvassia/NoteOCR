@@ -3,7 +3,6 @@
 // import { EXPO_PUBLIC_REACT_NATIVE_SERVER_URL } from "@env";
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "react-native";
 import { useAuth } from "./AuthContext";
 
 
@@ -28,7 +27,7 @@ type DocumentsContextType = {
 
 // Use only base server URL
 // const SERVER_URL = EXPO_PUBLIC_REACT_NATIVE_SERVER_URL;
-const SERVER_URL = process.env.EXPO_PUBLIC_REACT_NATIVE_SERVER_URL!;
+const SERVER_URL = process.env.EXPO_PUBLIC_API_URL!;
 
 
 const DocumentsContext = createContext<DocumentsContextType>({
@@ -61,7 +60,7 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
                 `${SERVER_URL}/documents?userId=${user.id}`
             );
 
-            if (!res.ok) throw new Error("Failed to fetch documents");
+            if (!res.ok) console.warn("Failed to fetch documents");
 
             const data = await res.json();
             setDocuments(data);
@@ -100,11 +99,11 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
                     name: newName, userId: user && user.id
                 }),
             });
-            if (!res.ok) throw new Error("Rename failed");
+            if (!res.ok) console.warn("Rename failed");
         } catch (err) {
             console.error("Rename document error:", err);
             setDocuments(previous);
-            Alert.alert(t("error"), t("renameFailed"));
+            console.warn(t("error"), t("renameFailed"));
         }
         refresh()
     };
@@ -118,43 +117,43 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
 
         if (!doc) return;
 
-        Alert.alert(
-            t("deleteDocument"),
-            t("deleteConfirm", { name: doc.name }),
-            [
-                { text: t("cancel"), style: "cancel" },
+        // console.warn(
+        //     t("deleteDocument"),
+        //     t("deleteConfirm", { name: doc.name }),
+        //     [
+        //         { text: t("cancel"), style: "cancel" },
+        //         {
+        //             text: t("delete"),
+        //             style: "destructive",
+        //             onPress: async () => {
+        const previous = documents;
+        setDocuments(docs => docs.filter(d => d.id !== id));
+
+        try {
+            const res = await fetch(
+                `${SERVER_URL}/documents/${id}`,
                 {
-                    text: t("delete"),
-                    style: "destructive",
-                    onPress: async () => {
-                        const previous = documents;
-                        setDocuments(docs => docs.filter(d => d.id !== id));
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId: user && user.id })
+                }
+            );
 
-                        try {
-                            const res = await fetch(
-                                `${SERVER_URL}/documents/${id}`,
-                                {
-                                    method: "DELETE",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ userId: user && user.id })
-                                }
-                            );
-
-                            if (!res.ok) throw new Error("Delete failed");
-                        } catch (err) {
-                            console.error("Delete document error:", err);
-                            setDocuments(previous);
-                            Alert.alert(t("error"), t("deleteFailed"));
-                        }
-                    },
-                },
-            ]
-        );
+            if (!res.ok) console.warn("Delete failed");
+        } catch (err) {
+            console.error("Delete document error:", err);
+            setDocuments(previous);
+            console.warn(t("error"), t("deleteFailed"));
+        }
+        // },
+        // },
+        // ]
+        // );
     };
 
     /**
- * Auto-fetch when user logs in
- */
+    * Auto-fetch when user logs in
+    */
     useEffect(() => {
         refresh();
     }, [refresh]);
