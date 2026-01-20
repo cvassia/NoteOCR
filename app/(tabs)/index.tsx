@@ -84,10 +84,14 @@ export default function OCRScreen() {
 
 
   const convertToJPEG = async (uri: string): Promise<string> => {
-    const result = await ImageManipulator.manipulateAsync(uri, [], {
-      compress: 0.95,
-      format: ImageManipulator.SaveFormat.JPEG,
-    });
+    const result = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 2000 } }],
+      {
+        compress: 0.9,
+        format: ImageManipulator.SaveFormat.JPEG,
+      }
+    );
     return result.uri;
   };
 
@@ -95,7 +99,7 @@ export default function OCRScreen() {
     const cam = await ImagePicker.requestCameraPermissionsAsync();
     const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (cam.status !== "granted" || lib.status !== "granted") {
-      alert("Camera and media library permissions are required!");
+      console.warn("Camera and media library permissions are required!");
       return false;
     }
     return true;
@@ -194,17 +198,24 @@ export default function OCRScreen() {
       setLoading(true);
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
-        quality: 1,
+        mediaTypes: ImagePicker.MediaTypeOptions.Images, // Use the constant
+        quality: 0.8, // Force conversion by setting < 1.0
+        allowsEditing: true,
       });
 
-      if (result.canceled) return;
-
-      // setOcrText("");
+      if (result.canceled) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true); // Start loading AFTER the user picks the image
       setDocxUrl(null);
 
-      const originalUri = result.assets[0].uri;
-      const jpegUri = await convertToJPEG(originalUri);
+      const asset = result.assets[0];
+
+      // Check if URI exists
+      if (!asset.uri) console.warn("No image URI found");
+
+      const jpegUri = await convertToJPEG(asset.uri);
       // setImageUri(jpegUri);
 
       const formData = new FormData();

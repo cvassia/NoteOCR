@@ -12,6 +12,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.smartLab.Image2Word",
       "buildNumber": "1.0.0",
+      "jsEngine": "jsc",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
            "NSCameraUsageDescription": "Used to scan documents",
@@ -29,8 +30,7 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "output": "static"
     },
     "plugins": [
       "expo-router",
@@ -42,6 +42,7 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
+              "image": "./assets/images/splash-icon.png", 
             "backgroundColor": "#000000"
           }
         }
@@ -49,7 +50,7 @@
     ],
     "experiments": {
       "typedRoutes": false,
-      "reactCompiler": true
+      "reactCompiler": false
     },
     "extra": {
       "router": {},
