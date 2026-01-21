@@ -12,14 +12,15 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.smartLab.Image2Word",
       "buildNumber": "1.0.0",
-      "jsEngine": "jsc",
+      "jsEngine": "hermes",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-           "NSCameraUsageDescription": "Used to scan documents",
+        "NSCameraUsageDescription": "Used to scan documents",
         "NSPhotoLibraryUsageDescription": "Used to select images for OCR"
       }
     },
     "android": {
+      "jsEngine": "hermes",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -27,7 +28,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.smartLab.Image2Word"
     },
     "web": {
       "output": "static"
@@ -42,7 +44,7 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
-              "image": "./assets/images/splash-icon.png", 
+            "image": "./assets/images/splash-icon.png",
             "backgroundColor": "#000000"
           }
         }
