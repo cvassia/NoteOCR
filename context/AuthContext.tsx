@@ -1,18 +1,23 @@
 // eslint-disable-next-line import/no-unresolved
-import { EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID, EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID } from '@env';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Google from 'expo-auth-session/providers/google';
-import { jwtDecode } from 'jwt-decode';
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { Platform } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as AppleAuthentication from "expo-apple-authentication";
+import * as Google from "expo-auth-session/providers/google";
+import { jwtDecode } from "jwt-decode";
+import React, {
+    createContext,
+    ReactNode,
+    useContext,
+    useEffect,
+    useState,
+} from "react";
+import { Platform } from "react-native";
 
-
-const getGoogleClientConfig = () => Platform.select({
-    web: { clientId: EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID },
-    ios: { clientId: EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID },
-    android: { clientId: EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID },
-});
+const getGoogleClientConfig = () =>
+    Platform.select({
+        web: { clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID },
+        ios: { clientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID },
+        android: { clientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID },
+    });
 type User = {
     id: string;
     name?: string;
@@ -27,7 +32,7 @@ type AuthContextType = {
     signOut: () => void;
 };
 
-const STORAGE_KEY = 'APP_USER';
+const STORAGE_KEY = "APP_USER";
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
@@ -58,17 +63,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     /** Google login */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [request, response, promptAsync] = Google.useAuthRequest(getGoogleClientConfig());
+    const [request, response, promptAsync] = Google.useAuthRequest(
+        getGoogleClientConfig(),
+    );
 
     useEffect(() => {
-        if (response?.type === 'success') {
+        if (response?.type === "success") {
             const { authentication } = response;
 
             if (authentication?.idToken) {
                 const decoded: any = jwtDecode(authentication.idToken);
 
                 const userData: User = {
-                    id: decoded.sub,          // ✅ STABLE GOOGLE USER ID
+                    id: decoded.sub, // ✅ STABLE GOOGLE USER ID
                     name: decoded.name,
                     email: decoded.email,
                 };
@@ -106,9 +113,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-
     return (
-        <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithApple, signOut }}>
+        <AuthContext.Provider
+            value={{ user, loading, signInWithGoogle, signInWithApple, signOut }}
+        >
             {children}
         </AuthContext.Provider>
     );
