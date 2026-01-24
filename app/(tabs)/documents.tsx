@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
-import * as AppleAuthentication from 'expo-apple-authentication';
-import React, { useCallback, useEffect, useState } from 'react';
+import * as AppleAuthentication from "expo-apple-authentication";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -12,13 +12,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
-} from 'react-native';
-import { Colors } from '../../components/colors';
-import { IconSymbol } from '../../components/ui/icon-symbol';
-import { useAuth } from '../../context/AuthContext';
-import { DocumentItem, useDocuments } from '../../context/DocumentsContext';
-import { shareDocument } from './index';
+  View,
+} from "react-native";
+import { Colors } from "../../components/colors";
+import { IconSymbol } from "../../components/ui/icon-symbol";
+import { useAuth } from "../../context/AuthContext";
+import { DocumentItem, useDocuments } from "../../context/DocumentsContext";
+import { shareDocument } from "./index";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Apple                                    */
@@ -34,7 +34,7 @@ export function AppleButton({ signIn }: AppleButtonProps) {
 
   useEffect(() => {
     (async () => {
-      if (Platform.OS === 'ios') {
+      if (Platform.OS === "ios") {
         const available = await AppleAuthentication.isAvailableAsync();
         setAppleAvailable(available);
       }
@@ -53,7 +53,13 @@ export function AppleButton({ signIn }: AppleButtonProps) {
       }}
       onPress={signIn}
     >
-      <Text style={{ fontWeight: 'bold', textAlign: "center", color: Colors.background }}>
+      <Text
+        style={{
+          fontWeight: "bold",
+          textAlign: "center",
+          color: Colors.background,
+        }}
+      >
         {t("signInApple")}
       </Text>
     </TouchableOpacity>
@@ -73,15 +79,14 @@ export default function DocumentsScreen() {
     loading: docsLoading,
     rename,
     remove,
-    refresh
+    refresh,
   } = useDocuments();
 
   useFocusEffect(
     useCallback(() => {
       refresh();
-    }, [refresh])
+    }, [refresh]),
   );
-
 
   const [renameModalVisible, setRenameModalVisible] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null);
@@ -127,19 +132,18 @@ export default function DocumentsScreen() {
   }
 
   /* ------------------------------ Empty state ------------------------------ */
-  if (documents.length === 0) {
+  if (!Array.isArray(documents) || documents.length === 0) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>{t("noDocuments")}</Text>
       </View>
     );
   }
-
   /* --------------------------------- List --------------------------------- */
   return (
     <>
       <ScrollView contentContainerStyle={styles.container}>
-        {documents.map(doc => (
+        {documents.map((doc) => (
           <View key={doc.id} style={styles.docRowContainer}>
             <TouchableOpacity
               style={styles.iconRow}
@@ -159,15 +163,25 @@ export default function DocumentsScreen() {
                   setRenameModalVisible(true);
                 }}
               >
-                <IconSymbol name="pencil.and.outline" size={22} color={Colors.background} />
+                <IconSymbol
+                  name="pencil.and.outline"
+                  size={22}
+                  color={Colors.background}
+                />
               </TouchableOpacity>
 
               <TouchableOpacity onPress={() => remove(doc.id)}>
                 <IconSymbol name="trash" size={22} color="red" />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => shareDocument(doc.url, doc.name)}>
-                <IconSymbol name="paperplane" size={22} color={Colors.background} />
+              <TouchableOpacity
+                onPress={() => shareDocument(doc.url, doc.name)}
+              >
+                <IconSymbol
+                  name="paperplane"
+                  size={22}
+                  color={Colors.background}
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -189,14 +203,20 @@ export default function DocumentsScreen() {
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: Colors.secondary }]}
+                style={[
+                  styles.modalButton,
+                  { backgroundColor: Colors.secondary },
+                ]}
                 onPress={() => setRenameModalVisible(false)}
               >
                 <Text style={styles.modalButtonText}>{t("cancel")}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: Colors.primary }]}
+                style={[
+                  styles.modalButton,
+                  { backgroundColor: Colors.primary },
+                ]}
                 onPress={() => {
                   if (newName.trim()) {
                     rename(selectedDoc.id, newName.trim());
@@ -225,50 +245,50 @@ const styles = StyleSheet.create({
   },
   docRowContainer: {
     backgroundColor: Colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 16,
     borderRadius: 20,
   },
   iconRow: {
     paddingVertical: 20,
     paddingHorizontal: 10,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   docRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 15,
   },
   docText: {
-    color: '#312C51',
-    fontWeight: '600',
+    color: "#312C51",
+    fontWeight: "600",
     fontSize: 16,
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 100,
   },
   emptyText: {
     fontSize: 16,
-    color: '#A9A4C7',
+    color: "#A9A4C7",
   },
   authContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 24,
   },
   authText: {
     fontSize: 18,
     marginBottom: 24,
-    textAlign: 'center',
-    color: '#312C51',
+    textAlign: "center",
+    color: "#312C51",
   },
   authButton: {
     backgroundColor: Colors.secondary,
@@ -279,7 +299,7 @@ const styles = StyleSheet.create({
   },
   authButtonText: {
     color: Colors.background,
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 16,
   },
   modalOverlay: {
