@@ -1,15 +1,18 @@
-
-
 // import { EXPO_PUBLIC_REACT_NATIVE_SERVER_URL } from "@env";
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
+import React, {
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useEffect,
+    useState,
+} from "react";
 import { useTranslation } from "react-i18next";
+import { Alert } from "react-native";
 import { useAuth } from "./AuthContext";
 
-
-
-
 export type DocumentItem = {
-    id: string;
+    _id: string;
     name: string;
     url: string;
     uploadedAt?: string;
@@ -29,7 +32,6 @@ type DocumentsContextType = {
 // const SERVER_URL = EXPO_PUBLIC_REACT_NATIVE_SERVER_URL;
 const SERVER_URL = process.env.EXPO_PUBLIC_API_URL!;
 
-
 const DocumentsContext = createContext<DocumentsContextType>({
     documents: [],
     loading: false,
@@ -40,120 +42,120 @@ const DocumentsContext = createContext<DocumentsContextType>({
 });
 
 export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
-
     const { user } = useAuth();
     const { t } = useTranslation();
+
 
     const [documents, setDocuments] = useState<DocumentItem[]>([]);
     const [loading, setLoading] = useState(false);
 
-
     /**
-   * Fetch user documents
-   */
+     * Fetch user documents
+     */
     const refresh = useCallback(async () => {
         if (!user) return;
 
         setLoading(true);
         try {
-            const res = await fetch(
-                `${SERVER_URL}/documents?userId=${user.id}`
-            );
-
-            if (!res.ok) console.warn("Failed to fetch documents");
+            const res = await fetch(`${SERVER_URL}/documents?userId=${user.id}`);
 
             const data = await res.json();
+
+            if (!res.ok || !Array.isArray(data)) {
+                console.warn("Failed to fetch documents", data);
+                setDocuments([]); // fallback to empty array
+                return;
+            }
             setDocuments(data);
         } catch (err) {
             console.error("Fetch documents error:", err);
+            setDocuments([]);
         } finally {
             setLoading(false);
         }
     }, [user]);
 
-
-
     // Add document locally (after OCR)
     const addLocal = (doc: DocumentItem) => {
         console.log("Adding local document:", doc);
 
-        setDocuments(prev => [doc, ...prev]);
-        refresh()
+        setDocuments((prev) => [doc, ...prev]);
+        refresh();
     };
 
     /**
      * Rename document
      */
     const rename = async (id: string, newName: string) => {
-        const previous = documents;
+        if (!user) return;
 
+        const previous = documents;
         // optimistic update
-        setDocuments(docs =>
-            docs.map(d => (d.id === id ? { ...d, name: newName } : d))
+        setDocuments((docs) =>
+            docs.map((d) => (d._id === id ? { ...d, name: newName } : d)),
         );
+
         try {
             const res = await fetch(`${SERVER_URL}/documents/${id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    name: newName, userId: user && user.id
+                    name: newName,
+                    userId: user && user.id,
                 }),
             });
+
             if (!res.ok) console.warn("Rename failed");
         } catch (err) {
             console.error("Rename document error:", err);
             setDocuments(previous);
             console.warn(t("error"), t("renameFailed"));
         }
-        refresh()
+        refresh();
     };
 
     /**
      * Delete document
      */
     const remove = async (id: string) => {
-        const doc = documents.find(d => d.id === id);
-
+        const doc = documents.find((d) => d._id === id);
 
         if (!doc) return;
 
-        // console.warn(
-        //     t("deleteDocument"),
-        //     t("deleteConfirm", { name: doc.name }),
-        //     [
-        //         { text: t("cancel"), style: "cancel" },
-        //         {
-        //             text: t("delete"),
-        //             style: "destructive",
-        //             onPress: async () => {
-        const previous = documents;
-        setDocuments(docs => docs.filter(d => d.id !== id));
-
-        try {
-            const res = await fetch(
-                `${SERVER_URL}/documents/${id}`,
+        Alert.alert(
+            t("deleteDocument"),
+            t("deleteConfirm", { name: doc.name }),
+            [
+                { text: t("cancel"), style: "cancel" },
                 {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ userId: user && user.id })
-                }
-            );
+                    text: t("delete"),
+                    style: "destructive",
+                    onPress: async () => {
+                        const previous = documents;
+                        setDocuments((docs) => docs.filter((d) => d._id !== id));
 
-            if (!res.ok) console.warn("Delete failed");
-        } catch (err) {
-            console.error("Delete document error:", err);
-            setDocuments(previous);
-            console.warn(t("error"), t("deleteFailed"));
-        }
-        // },
-        // },
-        // ]
-        // );
+                        try {
+                            const res = await fetch(`${SERVER_URL}/documents/${id}`, {
+                                method: "DELETE",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ userId: user && user.id }),
+                            });
+
+                            if (!res.ok) console.warn("Delete failed");
+                        } catch (err) {
+                            console.error("Delete document error:", err);
+                            setDocuments(previous);
+                            console.warn(t("error"), t("deleteFailed"));
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     /**
-    * Auto-fetch when user logs in
-    */
+     * Auto-fetch when user logs in
+     */
     useEffect(() => {
         refresh();
     }, [refresh]);
