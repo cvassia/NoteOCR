@@ -8,10 +8,11 @@ import React, {
     useState,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { Alert } from "react-native";
 import { useAuth } from "./AuthContext";
 
 export type DocumentItem = {
-    id: string;
+    _id: string;
     name: string;
     url: string;
     uploadedAt?: string;
@@ -43,6 +44,7 @@ const DocumentsContext = createContext<DocumentsContextType>({
 export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
     const { user } = useAuth();
     const { t } = useTranslation();
+
 
     const [documents, setDocuments] = useState<DocumentItem[]>([]);
     const [loading, setLoading] = useState(false);
@@ -85,12 +87,14 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
      * Rename document
      */
     const rename = async (id: string, newName: string) => {
-        const previous = documents;
+        if (!user) return;
 
+        const previous = documents;
         // optimistic update
         setDocuments((docs) =>
-            docs.map((d) => (d.id === id ? { ...d, name: newName } : d)),
+            docs.map((d) => (d._id === id ? { ...d, name: newName } : d)),
         );
+
         try {
             const res = await fetch(`${SERVER_URL}/documents/${id}`, {
                 method: "PATCH",
@@ -100,6 +104,7 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
                     userId: user && user.id,
                 }),
             });
+
             if (!res.ok) console.warn("Rename failed");
         } catch (err) {
             console.error("Rename document error:", err);
@@ -113,39 +118,39 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
      * Delete document
      */
     const remove = async (id: string) => {
-        const doc = documents.find((d) => d.id === id);
+        const doc = documents.find((d) => d._id === id);
 
         if (!doc) return;
 
-        // console.warn(
-        //     t("deleteDocument"),
-        //     t("deleteConfirm", { name: doc.name }),
-        //     [
-        //         { text: t("cancel"), style: "cancel" },
-        //         {
-        //             text: t("delete"),
-        //             style: "destructive",
-        //             onPress: async () => {
-        const previous = documents;
-        setDocuments((docs) => docs.filter((d) => d.id !== id));
+        Alert.alert(
+            t("deleteDocument"),
+            t("deleteConfirm", { name: doc.name }),
+            [
+                { text: t("cancel"), style: "cancel" },
+                {
+                    text: t("delete"),
+                    style: "destructive",
+                    onPress: async () => {
+                        const previous = documents;
+                        setDocuments((docs) => docs.filter((d) => d._id !== id));
 
-        try {
-            const res = await fetch(`${SERVER_URL}/documents/${id}`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: user && user.id }),
-            });
+                        try {
+                            const res = await fetch(`${SERVER_URL}/documents/${id}`, {
+                                method: "DELETE",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ userId: user && user.id }),
+                            });
 
-            if (!res.ok) console.warn("Delete failed");
-        } catch (err) {
-            console.error("Delete document error:", err);
-            setDocuments(previous);
-            console.warn(t("error"), t("deleteFailed"));
-        }
-        // },
-        // },
-        // ]
-        // );
+                            if (!res.ok) console.warn("Delete failed");
+                        } catch (err) {
+                            console.error("Delete document error:", err);
+                            setDocuments(previous);
+                            console.warn(t("error"), t("deleteFailed"));
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     /**

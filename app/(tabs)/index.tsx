@@ -148,7 +148,7 @@ export default function OCRScreen() {
       if (data.docxUrl && data.document) {
         setDocxUrl(data.docxUrl);
         addLocal({
-          id: data.document._id,
+          _id: data.document.id,
           name: data.document.name,
           url: data.document.url,
           text: data.document.text,
@@ -241,7 +241,7 @@ export default function OCRScreen() {
       if (data.docxUrl && data.document) {
         setDocxUrl(data.docxUrl);
         addLocal({
-          _id: data.document._id,
+          _id: data.document.id,
           name: data.document.name,
           url: data.document.url,
           text: data.document.text,

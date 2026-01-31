@@ -144,7 +144,7 @@ export default function DocumentsScreen() {
     <>
       <ScrollView contentContainerStyle={styles.container}>
         {documents.map((doc) => (
-          <View key={doc.id} style={styles.docRowContainer}>
+          <View key={doc._id} style={styles.docRowContainer}>
             <TouchableOpacity
               style={styles.iconRow}
               onPress={() => openDocument(doc.url)}
@@ -170,7 +170,7 @@ export default function DocumentsScreen() {
                 />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => remove(doc.id)}>
+              <TouchableOpacity onPress={() => remove(doc._id)}>
                 <IconSymbol name="trash" size={22} color="red" />
               </TouchableOpacity>
 
@@ -219,7 +219,7 @@ export default function DocumentsScreen() {
                 ]}
                 onPress={() => {
                   if (newName.trim()) {
-                    rename(selectedDoc.id, newName.trim());
+                    rename(selectedDoc._id, newName.trim());
                     setRenameModalVisible(false);
                   }
                 }}
@@ -267,6 +267,7 @@ const styles = StyleSheet.create({
     color: "#312C51",
     fontWeight: "600",
     fontSize: 16,
+    maxWidth: 150
   },
   emptyContainer: {
     flex: 1,
