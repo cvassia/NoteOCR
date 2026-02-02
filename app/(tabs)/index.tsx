@@ -1,6 +1,3 @@
-
-
-// import { REACT_NATIVE_SERVER_URL } from "@env";
 import { BlurView } from 'expo-blur';
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -25,8 +22,7 @@ import { useDocuments } from '../../context/DocumentsContext';
 
 
 
-const SERVER_URL = `${process.env.EXPO_PUBLIC_API_URL}/ocr`;
-// const SERVER_URL = `${REACT_NATIVE_SERVER_URL}/ocr`;
+const SERVER_URL = `${process.env.SERVER_URL}}/ocr`;
 
 
 export const shareDocument = async (url: string, filename: string) => {

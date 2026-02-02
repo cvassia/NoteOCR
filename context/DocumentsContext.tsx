@@ -1,4 +1,3 @@
-// import { EXPO_PUBLIC_REACT_NATIVE_SERVER_URL } from "@env";
 import React, {
     createContext,
     ReactNode,
@@ -29,8 +28,7 @@ type DocumentsContextType = {
 };
 
 // Use only base server URL
-// const SERVER_URL = EXPO_PUBLIC_REACT_NATIVE_SERVER_URL;
-const SERVER_URL = process.env.EXPO_PUBLIC_API_URL!;
+const SERVER_URL = process.env.SERVER_URL;
 
 const DocumentsContext = createContext<DocumentsContextType>({
     documents: [],
@@ -54,8 +52,8 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
      */
     const refresh = useCallback(async () => {
         if (!user) return;
-
         setLoading(true);
+
         try {
             const res = await fetch(`${SERVER_URL}/documents?userId=${user.id}`);
 
@@ -63,17 +61,19 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
 
             if (!res.ok || !Array.isArray(data)) {
                 console.warn("Failed to fetch documents", data);
+                Alert.alert(t("error"), "Failed to fetch documents");
                 setDocuments([]); // fallback to empty array
                 return;
             }
             setDocuments(data);
         } catch (err) {
-            console.error("Fetch documents error:", err);
+            console.warn("Fetch documents error:", err);
+            Alert.alert(t("error"), t("fetchDocumentsFailed"));
             setDocuments([]);
         } finally {
             setLoading(false);
         }
-    }, [user]);
+    }, [user, t]);
 
     // Add document locally (after OCR)
     const addLocal = (doc: DocumentItem) => {
@@ -89,12 +89,6 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
     const rename = async (id: string, newName: string) => {
         if (!user) return;
 
-        const previous = documents;
-        // optimistic update
-        setDocuments((docs) =>
-            docs.map((d) => (d._id === id ? { ...d, name: newName } : d)),
-        );
-
         try {
             const res = await fetch(`${SERVER_URL}/documents/${id}`, {
                 method: "PATCH",
@@ -104,12 +98,13 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
                     userId: user && user.id,
                 }),
             });
-
-            if (!res.ok) console.warn("Rename failed");
+            if (!res.ok) {
+                console.warn("Rename failed");
+                Alert.alert(t("renameFailed"));
+            }
         } catch (err) {
-            console.error("Rename document error:", err);
-            setDocuments(previous);
-            console.warn(t("error"), t("renameFailed"));
+            console.warn("Rename document error:", err);
+            Alert.alert(t("renameFailed"));
         }
         refresh();
     };
@@ -131,8 +126,6 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
                     text: t("delete"),
                     style: "destructive",
                     onPress: async () => {
-                        const previous = documents;
-                        setDocuments((docs) => docs.filter((d) => d._id !== id));
 
                         try {
                             const res = await fetch(`${SERVER_URL}/documents/${id}`, {
@@ -141,12 +134,14 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
                                 body: JSON.stringify({ userId: user && user.id }),
                             });
 
-                            if (!res.ok) console.warn("Delete failed");
+                            if (!res.ok) {
+                                console.error("Delete failed");
+                                Alert.alert(t("error"), t("deleteFailed"));
+                            }
                         } catch (err) {
-                            console.error("Delete document error:", err);
-                            setDocuments(previous);
-                            console.warn(t("error"), t("deleteFailed"));
+                            console.warn(err, t("deleteFailed"));
                         }
+                        refresh();
                     },
                 },
             ]
