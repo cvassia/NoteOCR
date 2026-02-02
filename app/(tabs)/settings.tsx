@@ -23,7 +23,7 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 export default function SettingsScreen() {
-    const { user, signInWithGoogle, signInWithApple, signOut } = useAuth();
+    const { user, signInWithGoogle, signInWithApple, signOut, deleteUser } = useAuth();
     const { t } = useTranslation();
 
     const [showHelp, setShowHelp] = useState(false);
@@ -196,6 +196,14 @@ export default function SettingsScreen() {
                     </Text>
                 </View>
             )}
+            {/* LICENSES */}
+            {user && (
+
+                <TouchableOpacity style={styles.row} onPress={deleteUser}>
+                    <Text style={styles.rowTitle}>{t("deleteUser")}</Text>
+                </TouchableOpacity>
+            )}
+
 
             {/* SIGN OUT */}
             {user && (

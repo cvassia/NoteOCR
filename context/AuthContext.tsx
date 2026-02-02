@@ -1,7 +1,8 @@
-// eslint-disable-next-line import/no-unresolved
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as Google from "expo-auth-session/providers/google";
+import { t } from "i18next";
 import { jwtDecode } from "jwt-decode";
 import React, {
     createContext,
@@ -10,7 +11,7 @@ import React, {
     useEffect,
     useState,
 } from "react";
-import { Platform } from "react-native";
+import { Alert, Platform } from "react-native";
 
 const getGoogleClientConfig = () =>
     Platform.select({
@@ -30,9 +31,13 @@ type AuthContextType = {
     signInWithGoogle: () => Promise<void>;
     signInWithApple: () => Promise<void>;
     signOut: () => void;
+    deleteUser: () => Promise<void>;
 };
 
 const STORAGE_KEY = "APP_USER";
+
+const SERVER_URL = process.env.SERVER_URL;
+
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
@@ -40,6 +45,7 @@ const AuthContext = createContext<AuthContextType>({
     signInWithGoogle: async () => { },
     signInWithApple: async () => { },
     signOut: () => { },
+    deleteUser: async () => { },
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -62,10 +68,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     /** Google login */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const [request, response, promptAsync] = Google.useAuthRequest(
         getGoogleClientConfig(),
     );
+
+
+
+
 
     useEffect(() => {
         if (response?.type === "success") {
@@ -113,9 +123,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    /** Delete User */
+    const deleteUser = async () => {
+        if (!user) return;
+
+        Alert.alert(
+            t("deleteUser"),
+            t("deleteConfirm", { name: t("userName") }),
+            [
+                { text: t("cancel"), style: "cancel" },
+                {
+                    text: t("delete"),
+                    style: "destructive",
+                    onPress: async () => {
+
+
+                        try {
+                            setLoading(true);
+
+                            await fetch(`${SERVER_URL}/users/${user.id}`, {
+                                method: "DELETE",
+                            });
+
+                            setUser(null);
+                            await AsyncStorage.removeItem(STORAGE_KEY);
+
+                        } catch (err) {
+                            console.error("Delete user error:", err);
+                        } finally {
+                            setLoading(false);
+                        }
+                    },
+                },
+            ]
+        );
+
+
+    };
+
     return (
         <AuthContext.Provider
-            value={{ user, loading, signInWithGoogle, signInWithApple, signOut }}
+            value={{
+                user, loading,
+                signInWithGoogle,
+                signInWithApple, signOut, deleteUser
+            }}
         >
             {children}
         </AuthContext.Provider>
