@@ -28,7 +28,7 @@ type DocumentsContextType = {
 };
 
 // Use only base server URL
-const SERVER_URL = process.env.SERVER_URL;
+const SERVER_URL = process.env.EXPO_PUBLIC_API_URL!;
 
 const DocumentsContext = createContext<DocumentsContextType>({
     documents: [],
@@ -53,7 +53,6 @@ export const DocumentsProvider = ({ children }: { children: ReactNode }) => {
     const refresh = useCallback(async () => {
         if (!user) return;
         setLoading(true);
-
         try {
             const res = await fetch(`${SERVER_URL}/documents?userId=${user.id}`);
 
