@@ -9,7 +9,7 @@ A cross-platform mobile application that converts photos of printed documents in
 ➡️ https://image2word.cvassia.com/
 
 
-![Image2Doc GIF](https://github.com/cvassia/NoteOCR/raw/main/assets/demo.mp4)  
+![Image2Doc GIF](https://github.com/cvassia/NoteOCR/raw/main/assets/demo.gif)  
 
 
 ---
