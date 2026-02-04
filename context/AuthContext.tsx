@@ -36,7 +36,7 @@ type AuthContextType = {
 
 const STORAGE_KEY = "APP_USER";
 
-const SERVER_URL = process.env.SERVER_URL;
+const SERVER_URL = process.env.EXPO_PUBLIC_SERVER_URL;
 
 
 const AuthContext = createContext<AuthContextType>({
