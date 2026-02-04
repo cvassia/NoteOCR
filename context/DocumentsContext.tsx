@@ -28,7 +28,7 @@ type DocumentsContextType = {
 };
 
 // Use only base server URL
-const SERVER_URL = process.env.EXPO_PUBLIC_API_URL!;
+const SERVER_URL = process.env.EXPO_PUBLIC_SERVER_URL!;
 
 const DocumentsContext = createContext<DocumentsContextType>({
     documents: [],

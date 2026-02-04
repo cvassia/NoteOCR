@@ -22,7 +22,7 @@ import { useDocuments } from '../../context/DocumentsContext';
 
 
 
-const SERVER_URL = `${process.env.SERVER_URL}}/ocr`;
+const SERVER_URL = `${process.env.EXPO_PUBLIC_SERVER_URL}/ocr`;
 
 
 export const shareDocument = async (url: string, filename: string) => {

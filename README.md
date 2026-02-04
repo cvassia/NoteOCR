@@ -1,23 +1,22 @@
-# NoteOCR 📄📱  
-Offline-Capable OCR Mobile App with Greek & English Support and Word Export
+# Image2Doc (NoteOCR)
+
+A cross-platform mobile application that converts photos of printed documents into editable Word (.docx) files using **Google Document AI OCR**, with full document management and secure authentication.
 
 ---
 
-## 📌 Overview
+## 🚀 Live Demo
 
-**NoteOCR** is a mobile application built with **Expo (React Native)** and a **Node.js OCR server** that allows users to:
+➡️ https://image2word.cvassia.com/
 
-- Pick an image from their device or take a photo of a document
-- Perform OCR (Optical Character Recognition)
-- Recognize **Greek (Ελληνικά)** and **English** text
-- Preserve paragraph structure as much as possible
-- Export the recognized text into a **Microsoft Word (.docx)** file
-- Download or share the Word document from the mobile device
-- Manage documents if logged in:
-   Rename
-   Delete (with confirmation)
-   Share
-- Open documents directly from the app
+
+![Image2Doc GIF](https://github.com/cvassia/NoteOCR/raw/main/assets/demo.mp4)  
+
+
+---
+
+## 🧠 Overview
+
+Image2Word is a mobile-first document digitization tool built with **React Native** and **TypeScript**. Users can take a photo or upload a document image, extract the text using Google Document AI, and download the output as an editable Word file. The app supports Greek and all Latin-based languages and provides user-friendly document management.
 
 This app is designed primarily for **documents**, such as:
 - Legal documents
@@ -27,32 +26,63 @@ This app is designed primarily for **documents**, such as:
 
 ---
 
-## 🧠 Architecture
+## 👨‍💻 Role & Contribution
 
-The app consists of **two parts**:
+I developed this project end-to-end as a solo developer:
 
-### 1️⃣ Mobile Client (Expo / React Native)
-- Image selection
-- Image preprocessing
-- OCR request handling
-- Display OCR results
-- Download & share Word documents
+Built mobile frontend with React Native and TypeScript
+Developed backend API using Node.js and Express
+Integrated Google Document AI for OCR
+Implemented secure authentication and document management
+Managed the workflow from image capture to .docx generation
 
-### 2️⃣ OCR Server (Node.js / Express)
-- Receives images
-- Runs OCR using **Tesseract.js**
-- Supports **Greek (ell)** and **English (eng)**
-- Generates `.docx` files
-- Serves generated Word files to the client
-- Exposes document management endpoints:
+---
 
-   GET /documents → lists available documents
 
-   POST /documents → adds a document (if persisted backend is implemented)
+## 🏗 Architecture
 
-   PATCH /documents/:id → renames a document
+React Native Client
+↳ Image Capture / Upload
+↳ Client-side image preprocessing
 
-   DELETE /documents/:id → deletes a document
+Backend API (Node.js + Express)
+↳ OCR request handling
+↳ Google Document AI integration
+↳ Docx file creation
+↳ Auth & document storage
+
+Google Document AI
+↳ Multi-language OCR
+↳ High-accuracy extraction
+
+
+---
+
+## 🧩 Key Features
+
+- 📸 Capture or upload images of documents  
+- 🧠 OCR support for Greek and Latin languages  
+- 📄 Export recognized text as editable Word files  
+- 🔐 Secure login with Google & Apple  
+- 📂 Save, rename, delete, download & share documents  
+
+---
+
+## ⚠️ Challenges & Solutions
+
+OCR Accuracy: Improved preprocessing for better recognition
+Large Uploads: Optimized mobile image handling
+Async Workflows: Smooth, reliable asynchronous processes
+Word Generation: Clean conversion of OCR results into .docx
+
+---
+
+## Key Learnings
+
+Full-stack TypeScript development
+AI service integration in mobile apps
+Secure file pipelines
+Mobile authentication best practices
 
 ---
 
@@ -68,26 +98,26 @@ The app consists of **two parts**:
 ### Backend
 - Node.js
 - Express
-- Multer (file uploads)
-- Tesseract.js v7
-- docx (Word document generation)
-- cors
+- Google Document AI
+- MS Word (.docx) generation
+- Authentication (Google & Apple)
 
 ---
 
-## 📂 Project Structure
 
-NoteOCR/
-├── app/
-│   └── (tabs)/
-│       ├── ocr.tsx      # OCR screen
-│       ├── documents.tsx # Document list and management
-│       └── settings.tsx  # Settings screen with user profile and help
-├── server/
-│   ├── index.js          # OCR server
-│   ├── uploads/          # Uploaded images + generated DOCX
-│   └── package.json
-├── README.md
+## 📁 Project Structure
+
+📦 client
+┣ 📂 src
+┃ ┣ 📂 assets
+┃ ┣ 📂 components
+┃ ┣ 📂 screens
+┃ ┗ 📜 App.tsx
+📦 server
+┣ 📂 controllers
+┣ 📂 routes
+┣ 📂 utils
+┗ 📜 index.js
 
 
 ---
@@ -105,27 +135,7 @@ NoteOCR/
 7. User can **download or share** the `.docx` file
 8. User logs in (optional but enables document management)
 
----
 
-## 🔐 Authentication
-
-Google Sign-In (all platforms)
-
-Apple Sign-In (iOS only)
-
-Auth state is stored in AsyncStorage
-
-When logged in, users can manage their documents directly
-
-User profile shows:
-
-Avatar illustration
-
-Email (if available)
-
-Sign out button
-
----
 
 ## 🖼 Image Preprocessing (Client Side)
 
@@ -134,8 +144,6 @@ Before uploading, the image is:
 - Converted to **JPEG**
 - Preserved at full quality
 - Normalized to avoid HEIC / PNG issues
-
-This ensures compatibility with Tesseract.
 
 ---
 
@@ -155,107 +163,54 @@ Due to OCR engine limitations:
 
 ---
 
-## 📄 Word (.docx) Export
 
-After OCR, the server:
 
-- Splits text into paragraphs
-- Creates a **single Word document**
-- Keeps paragraphs on the **same page**
-- Avoids page breaks per line
 
-The document is generated using the **docx** library and saved on the server.
+## 🧪 Local Development
+
+1. Clone the repository  
+git clone https://github.com/cvassia/NoteOCR.git
+
+2. Install client and server dependencies
+cd client && npm install
+cd ../server && npm install
+
+3. Configure environment variables (Google AI keys, etc.)
+4. Run client and backend
+expo start
+node server/index.js
+
 
 ---
 
-## 📥 Downloading the Word File (Mobile)
+## 📦 Deployment
 
-- The server exposes the generated `.docx` via HTTP
-- The mobile app fetches the file
-- The user can:
-- Save it
-- Share it via email / cloud / messaging apps
+- Mobile app deployed via **Expo**
+- Backend hosted with environment-protected services
+- Google Document AI setup via **Google Cloud console**
 
 ---
 
-## 🌐 Server API
+## 🧠 Future Improvements
 
-### POST `/ocr`
-
-Uploads an image and returns OCR results.
-
----
-
-## 📥 Document Management
-
-If logged in:
-
-Rename: Tap pencil icon → enter a new name
-
-Delete: Tap trash icon → confirm deletion via alert
-
-Open: Tap document → opens the Word file
-
-Share: Tap plane icon → share via email, cloud, or messaging apps
-
-All changes are persisted locally and can be persisted on backend if the server implements:
-
-PATCH /documents/:id → rename
-
-DELETE /documents/:id → delete
+- Add automated testing (end-to-end + unit)
+- Improve error handling & offline support
+- Add pagination and document search
+- Enhance UI animations and accessibility
 
 ---
 
-## 🌐 Server API
-OCR
+## 📎 Links
 
-POST /ocr
-Uploads an image and returns OCR results + .docx file URL
-
-Documents
-
-GET /documents → returns a list of .docx documents
-
-POST /documents → adds a document
-
-PATCH /documents/:id → renames a document
-
-DELETE /documents/:id → deletes a document
+- 🟦 Live App: https://image2word.cvassia.com/  
+- 🐙 GitHub Repo: https://github.com/cvassia/NoteOCR
 
 ---
 
-## ⚙️ Settings
+## 📜 License
 
-View profile info (avatar + email)
+MIT © 2026
 
-Help section (explains app functionality)
-
-Licenses section
-
-Sign out button
-
-
-
-### Running the Project
-
-1️⃣ Start the Server
-
-cd server
-npm install
-node index.js
-
-
-
-2️⃣ Start the Mobile App
-
-npm install
-npx expo start
-
-Run on:
-
-iOS Simulator
-Android Emulator
-Physical device 
 
 
 

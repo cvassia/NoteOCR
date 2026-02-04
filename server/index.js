@@ -80,7 +80,7 @@ const upload = multer({ storage });
 const projectId = process.env.PROJECT_ID;
 const location = process.env.LOCATION;
 const processorId = process.env.PROCESSOR_ID;
-const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
+const SERVER_URL = process.env.EXPO_PUBLIC_SERVER_URL;
 
 
 /* ------------------ Document AI client ------------------ */
