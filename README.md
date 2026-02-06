@@ -4,9 +4,9 @@ A cross-platform mobile application that converts photos of printed documents in
 
 ---
 
-## 🚀 Live Demo
+## 🚀 Live App
 
-➡️ https://image2word.cvassia.com/
+➡️ https://apps.apple.com/za/app/image2word/id6757700644
 
 
 ![Image2Doc GIF](https://github.com/cvassia/NoteOCR/raw/main/assets/demo.gif)  
