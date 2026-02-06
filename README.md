@@ -4,7 +4,7 @@ A cross-platform mobile application that converts photos of printed documents in
 
 ---
 
-## 🚀 Live Demo
+## 🚀 Live App
 
 ➡️ https://apps.apple.com/za/app/image2word/id6757700644
 
